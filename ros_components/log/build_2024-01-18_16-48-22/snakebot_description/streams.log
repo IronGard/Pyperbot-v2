@@ -1,0 +1,36 @@
+[0.159s] Invoking command in '/home/hahnlam/snakebot_ws/build/snakebot_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/hahnlam/snakebot_ws/install/snakebot_py_code:/opt/ros/iron /usr/bin/cmake --build /home/hahnlam/snakebot_ws/build/snakebot_description -- -j12 -l12
+[0.454s] Invoked command in '/home/hahnlam/snakebot_ws/build/snakebot_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/hahnlam/snakebot_ws/install/snakebot_py_code:/opt/ros/iron /usr/bin/cmake --build /home/hahnlam/snakebot_ws/build/snakebot_description -- -j12 -l12
+[0.475s] Invoking command in '/home/hahnlam/snakebot_ws/build/snakebot_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/hahnlam/snakebot_ws/install/snakebot_py_code:/opt/ros/iron /usr/bin/cmake --install /home/hahnlam/snakebot_ws/build/snakebot_description
+[0.482s] -- Install configuration: ""
+[0.483s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/meshes
+[0.484s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/meshes/full_module.stl
+[0.484s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/meshes/Servo Bevel Gear_MG966R - X8 .stl
+[0.487s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/meshes/Cross v4 - X3.3mf
+[0.487s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/meshes/Mid Bracket.stl
+[0.487s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/meshes/Servo Bevel Gear_MG966R - X8 .3mf
+[0.487s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/meshes/Universal Joint X4 .3mf
+[0.488s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/meshes/Cross v4 - X3.stl
+[0.488s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/meshes/Mid Bracket.3mf
+[0.489s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/meshes/Top Bracket.stl
+[0.489s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/meshes/Top Bracket.3mf
+[0.490s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/meshes/bottom_bracket.stl
+[0.490s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/meshes/Universal Joint X4 .stl
+[0.490s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/meshes/Bottom Bracket.3mf
+[0.490s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/urdf
+[0.490s] -- Installing: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/urdf/snakebot.urdf.xacro
+[0.490s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/ament_index/resource_index/package_run_dependencies/snakebot_description
+[0.491s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/ament_index/resource_index/parent_prefix_path/snakebot_description
+[0.491s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/environment/ament_prefix_path.sh
+[0.491s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/environment/ament_prefix_path.dsv
+[0.491s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/environment/path.sh
+[0.492s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/environment/path.dsv
+[0.492s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/local_setup.bash
+[0.492s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/local_setup.sh
+[0.492s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/local_setup.zsh
+[0.493s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/local_setup.dsv
+[0.494s] -- Installing: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/package.dsv
+[0.494s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/ament_index/resource_index/packages/snakebot_description
+[0.494s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/cmake/snakebot_descriptionConfig.cmake
+[0.495s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/cmake/snakebot_descriptionConfig-version.cmake
+[0.495s] -- Up-to-date: /home/hahnlam/snakebot_ws/install/snakebot_description/share/snakebot_description/package.xml
+[0.495s] Invoked command in '/home/hahnlam/snakebot_ws/build/snakebot_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/hahnlam/snakebot_ws/install/snakebot_py_code:/opt/ros/iron /usr/bin/cmake --install /home/hahnlam/snakebot_ws/build/snakebot_description

@@ -1,0 +1,8 @@
+source;share/snakebot_cpp_code/hook/cmake_prefix_path.ps1
+source;share/snakebot_cpp_code/hook/cmake_prefix_path.dsv
+source;share/snakebot_cpp_code/hook/cmake_prefix_path.sh
+source;share/snakebot_cpp_code/local_setup.bash
+source;share/snakebot_cpp_code/local_setup.dsv
+source;share/snakebot_cpp_code/local_setup.ps1
+source;share/snakebot_cpp_code/local_setup.sh
+source;share/snakebot_cpp_code/local_setup.zsh
