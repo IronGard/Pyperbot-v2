@@ -1,0 +1,15 @@
+/home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/ament_index/resource_index/package_run_dependencies/snakebot_cpp_code
+/home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/ament_index/resource_index/parent_prefix_path/snakebot_cpp_code
+/home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/environment/ament_prefix_path.sh
+/home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/environment/ament_prefix_path.dsv
+/home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/environment/path.sh
+/home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/environment/path.dsv
+/home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/local_setup.bash
+/home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/local_setup.sh
+/home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/local_setup.zsh
+/home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/local_setup.dsv
+/home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/package.dsv
+/home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/ament_index/resource_index/packages/snakebot_cpp_code
+/home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/cmake/snakebot_cpp_codeConfig.cmake
+/home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/cmake/snakebot_cpp_codeConfig-version.cmake
+/home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/package.xml

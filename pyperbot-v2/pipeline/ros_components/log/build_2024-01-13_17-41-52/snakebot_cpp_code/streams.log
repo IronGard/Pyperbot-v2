@@ -1,0 +1,42 @@
+[0.096s] Invoking command in '/home/hahnlam/snakebot_ws/build/snakebot_cpp_code': CMAKE_PREFIX_PATH=/opt/ros/iron /usr/bin/cmake /home/hahnlam/snakebot_ws/src/snakebot_cpp_code -DCMAKE_INSTALL_PREFIX=/home/hahnlam/snakebot_ws/install/snakebot_cpp_code
+[0.464s] -- The C compiler identification is GNU 11.4.0
+[1.481s] -- The CXX compiler identification is GNU 11.4.0
+[2.195s] -- Detecting C compiler ABI info
+[2.412s] -- Detecting C compiler ABI info - done
+[2.418s] -- Check for working C compiler: /usr/bin/cc - skipped
+[2.419s] -- Detecting C compile features
+[2.420s] -- Detecting C compile features - done
+[2.423s] -- Detecting CXX compiler ABI info
+[2.686s] -- Detecting CXX compiler ABI info - done
+[2.692s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[2.693s] -- Detecting CXX compile features
+[2.693s] -- Detecting CXX compile features - done
+[2.700s] -- Found ament_cmake: 2.0.3 (/opt/ros/iron/share/ament_cmake/cmake)
+[2.830s] -- Found Python3: /usr/bin/python3.10 (found version "3.10.12") found components: Interpreter 
+[2.925s] -- Found ament_lint_auto: 0.14.2 (/opt/ros/iron/share/ament_lint_auto/cmake)
+[2.993s] -- Added test 'lint_cmake' to check CMake code style
+[2.995s] -- Added test 'xmllint' to check XML markup files
+[2.996s] -- Configuring done
+[2.999s] -- Generating done
+[2.999s] -- Build files have been written to: /home/hahnlam/snakebot_ws/build/snakebot_cpp_code
+[3.005s] Invoked command in '/home/hahnlam/snakebot_ws/build/snakebot_cpp_code' returned '0': CMAKE_PREFIX_PATH=/opt/ros/iron /usr/bin/cmake /home/hahnlam/snakebot_ws/src/snakebot_cpp_code -DCMAKE_INSTALL_PREFIX=/home/hahnlam/snakebot_ws/install/snakebot_cpp_code
+[3.005s] Invoking command in '/home/hahnlam/snakebot_ws/build/snakebot_cpp_code': CMAKE_PREFIX_PATH=/opt/ros/iron /usr/bin/cmake --build /home/hahnlam/snakebot_ws/build/snakebot_cpp_code -- -j12 -l12
+[3.027s] Invoked command in '/home/hahnlam/snakebot_ws/build/snakebot_cpp_code' returned '0': CMAKE_PREFIX_PATH=/opt/ros/iron /usr/bin/cmake --build /home/hahnlam/snakebot_ws/build/snakebot_cpp_code -- -j12 -l12
+[3.048s] Invoking command in '/home/hahnlam/snakebot_ws/build/snakebot_cpp_code': CMAKE_PREFIX_PATH=/opt/ros/iron /usr/bin/cmake --install /home/hahnlam/snakebot_ws/build/snakebot_cpp_code
+[3.052s] -- Install configuration: ""
+[3.052s] -- Installing: /home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/ament_index/resource_index/package_run_dependencies/snakebot_cpp_code
+[3.052s] -- Installing: /home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/ament_index/resource_index/parent_prefix_path/snakebot_cpp_code
+[3.053s] -- Installing: /home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/environment/ament_prefix_path.sh
+[3.053s] -- Installing: /home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/environment/ament_prefix_path.dsv
+[3.053s] -- Installing: /home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/environment/path.sh
+[3.053s] -- Installing: /home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/environment/path.dsv
+[3.054s] -- Installing: /home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/local_setup.bash
+[3.054s] -- Installing: /home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/local_setup.sh
+[3.054s] -- Installing: /home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/local_setup.zsh
+[3.054s] -- Installing: /home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/local_setup.dsv
+[3.054s] -- Installing: /home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/package.dsv
+[3.054s] -- Installing: /home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/ament_index/resource_index/packages/snakebot_cpp_code
+[3.055s] -- Installing: /home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/cmake/snakebot_cpp_codeConfig.cmake
+[3.055s] -- Installing: /home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/cmake/snakebot_cpp_codeConfig-version.cmake
+[3.055s] -- Installing: /home/hahnlam/snakebot_ws/install/snakebot_cpp_code/share/snakebot_cpp_code/package.xml
+[3.056s] Invoked command in '/home/hahnlam/snakebot_ws/build/snakebot_cpp_code' returned '0': CMAKE_PREFIX_PATH=/opt/ros/iron /usr/bin/cmake --install /home/hahnlam/snakebot_ws/build/snakebot_cpp_code
