@@ -166,36 +166,7 @@ def test_joint_5():
             my_snake.move_module(3, [0, 0, 0, 0, np.radians(current_angle)])
             time.sleep(0.1)
     
-        initial_angle = initial_angle*-1
-
-def test_joint_5_2():
-    angle_step = 15
-    angles = [-45, -45, -45, -45]
+        initial_angle = initial_angle*-1    
     
-    for i in range(9):
-        if(i < 4):
-            for j in range(i, 0, -1):
-                angles[j] = angles[j-1]
-            
-            angles[0] = angles[0] + angle_step
-            
-            for j in range(4):
-                my_snake.move_module(j, [0, 0, 0, 0, np.radians(angles[j])])
-            
-        else:
-            for j in range(3, 0, -1):
-                if(angles[j] < 45):
-                    angles[j] = angles[j-1]
-                
-                if(angles[0] < 45):
-                    angles[0] = angles[0] + angle_step
-                
-            for j in range(4):
-                my_snake.move_module(j, [0, 0, 0, 0, np.radians(angles[j])])                
-    
-    
-    
-    
-
-test_joint_5_2()
+test_joint_5()
         
