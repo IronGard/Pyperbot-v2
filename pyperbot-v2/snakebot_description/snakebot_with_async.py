@@ -3,6 +3,8 @@ import os
 import time
 import math
 import pybullet_data
+import threading
+import asyncio
 
 #TODO: Adjust the values of the joint state publishing and the output rate for the information.
 
@@ -46,6 +48,11 @@ def get_joint_info(robot):
             print('Joint', i, 'is named', joint_info[1], 'and is of type', joint_info[2])
 
 get_joint_info(robot)
+
+def test():
+    while True:
+        print("This is running.")
+        time.sleep(1)
 
 #breaking joints down into different modules
 module_1 = moving_joint_names[0:5]
@@ -129,6 +136,10 @@ while(1):
     print('---------------------')
     time.sleep(dt)
 
+
+#starting thread
+t1 = threading.Thread(target = test)
+t1.start()
 
 #closing simulation
 p.disconnect()

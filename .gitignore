@@ -3,3 +3,4 @@ venv/*
 videos/*
 .vscode/*
 example_images/*
+.env/*
