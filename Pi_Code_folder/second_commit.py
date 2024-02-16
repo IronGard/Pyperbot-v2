@@ -40,6 +40,10 @@ MODULE0_OFFSETS = [0, 0, 0, 0, 15]
 host = "192.168.97.28"
 port = 6969
 
+#Limits
+#JOINT_MAX = [, ]
+#JOINT_MIN = []
+
 #========================|Classes|========================
 
 class module():
@@ -108,15 +112,14 @@ class snake():
             if(old_joint_values[i] != new_joint_values[i]):
                 self.modules[module_number].move_joint(int(i), new_joint_values[i])
             
-
-#========================|Creating the Snake Object|========================
+#========================|Creating Snake Object|========================
 my_snake = snake()
-my_snake.add_module(module(0x41, MODULE0_OFFSETS))
+my_snake.add_module(module(0x40, MODULE0_OFFSETS))
 my_snake.add_module(module(0x41, MODULE0_OFFSETS))
 my_snake.add_module(module(0x42, MODULE0_OFFSETS))
 my_snake.add_module(module(0x43, MODULE0_OFFSETS))
 
-#========================|Client Code|========================
+#========================|Client Setup|========================
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((host,port))
 print(f"Connection received at {host}")
@@ -141,18 +144,17 @@ while (reply != "KILL"):
         
     joint_angles_2d = np.reshape(np.array(joint_angles_1d), (4, 5))
     
-    for i in range(4):
-        my_snake.move_module(i, joint_angles_2d[i])
-
-    input()
+    #for i in range(4):
+    my_snake.move_module(0, joint_angles_2d[0])
+    my_snake.move_module(1, joint_angles_2d[1])
+    #input()
     counter = counter + 1
 s.close()
 
-
 #========================|Test Code|========================
 
-module0 = module(0x40, MODULE0_OFFSETS)
 
+#Function for testing sinusoidal motion in joint 4 (top c-bracket)
 
 #Function for testing sinusoidal motion in joint 5 (bottom c-bracket)
 def test_joint_5():
@@ -180,5 +182,46 @@ def test_joint_5():
             my_snake.move_module(3, [0, 0, 0, 0, np.radians(current_angle)])
             time.sleep(0.1)
     
-        initial_angle = initial_angle*-1    
+        initial_angle = initial_angle*-1
+
+def test_joint_5_2():
+    angle_step = 15
+    angles = [-45, -45, -45, -45]
+    
+    for i in range(9):
+        if(i < 4):
+            for j in range(i, 0, -1):
+                angles[j] = angles[j-1]
+            
+            angles[0] = angles[0] + angle_step
+            
+            for j in range(4):
+                my_snake.move_module(j, [0, 0, 0, 0, np.radians(angles[j])])
+            
+        else:
+            for j in range(3, 0, -1):
+                if(angles[j] < 45):
+                    angles[j] = angles[j-1]
+                
+                if(angles[0] < 45):
+                    angles[0] = angles[0] + angle_step
+                
+            for j in range(4):
+                my_snake.move_module(j, [0, 0, 0, 0, np.radians(angles[j])])                
+    
+#while(1):
+    #print("a")
+    #my_snake.move_module(1, [0, 0, 0, 0, 0])
+    #time.sleep(1)
+    #my_snake.move_module(1, [0, 0, 0, np.radians(20), 0])
+    #time.sleep(1)
+    #my_snake.move_module(1, [0, 0, 0, np.radians(40), 0])
+    #time.sleep(1)
+    #my_snake.move_module(1, [0, 0, 0, np.radians(60), 0])
+    #time.sleep(1)
+    #module0.servo[0].angle = 180
+    #time.sleep(1)
+    #module0.servo[0].angle = 160
+    #time.sleep(1)
+
         
