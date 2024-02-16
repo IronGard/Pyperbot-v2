@@ -21,6 +21,7 @@ import board
 from adafruit_servokit import ServoKit
 import math
 import numpy as np
+import socket
 
 #========================|Constants|========================
 
@@ -34,6 +35,10 @@ SPINDLE_INNER_PERIMETER = 2*PI*SPINDLE_INNER_RADIUS
 
 #Servo Offsets (deg) 
 MODULE0_OFFSETS = [0, 0, 0, 0, 15]
+
+#Server Settings
+host = "192.168.97.28"
+port = 6969
 
 #========================|Classes|========================
 
@@ -104,40 +109,49 @@ class snake():
                 self.modules[module_number].move_joint(int(i), new_joint_values[i])
             
 
-
-#========================|Test Code|========================
-
-module0 = module(0x40, MODULE0_OFFSETS)
+#========================|Creating the Snake Object|========================
 my_snake = snake()
-my_snake.add_module(module0)
+my_snake.add_module(module(0x41, MODULE0_OFFSETS))
 my_snake.add_module(module(0x41, MODULE0_OFFSETS))
 my_snake.add_module(module(0x42, MODULE0_OFFSETS))
 my_snake.add_module(module(0x43, MODULE0_OFFSETS))
 
-def test_joint_2():
-      v
-      input()
+#========================|Client Code|========================
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect((host,port))
+print(f"Connection received at {host}")
 
-#Function for testing sinusoidal motion in joint 4 (top c-bracket)
-def test_joint_4():
-    angle_step = 1
-    initial_angle = -45
-    current_angle = initial_angle
+joint_angles_1d = np.zeros(20)
+joint_angles_2d = np.zeros((4,5))
 
-    while(1):
-        while(current_angle < -1*initial_angle):#
-            current_angle = current_angle + angle_step
-            my_snake.move_module(0, [np.radians(current_angle), 0, np.radians(current_angle), 0, 0, np.radians(current_angle), 0])
-            time.sleep(0.02)
+
+counter = 0
+reply = None
+
+while (reply != "KILL"):
+    command = "REQ"
+    s.send(str.encode(command))
+    reply = s.recv(1024)
+    reply = (reply.decode('utf-8'))
+    split_reply = reply.split(',')
+    print(len(split_reply))
+
+    for i in range(len(split_reply)):
+        joint_angles_1d[i] = float(split_reply[i])
         
-        initial_angle = initial_angle*-1
+    joint_angles_2d = np.reshape(np.array(joint_angles_1d), (4, 5))
     
-        while(current_angle > initial_angle*-1):
-            current_angle = current_angle - angle_step
-            my_snake.move_module(0, [np.radians(current_angle), 0, np.radians(current_angle), 0, 0, np.radians(current_angle), 0])
-            time.sleep(0.02)
-    
-        initial_angle = initial_angle*-1
+    for i in range(4):
+        my_snake.move_module(i, joint_angles_2d[i])
+
+    input()
+    counter = counter + 1
+s.close()
+
+
+#========================|Test Code|========================
+
+module0 = module(0x40, MODULE0_OFFSETS)
 
 
 #Function for testing sinusoidal motion in joint 5 (bottom c-bracket)
