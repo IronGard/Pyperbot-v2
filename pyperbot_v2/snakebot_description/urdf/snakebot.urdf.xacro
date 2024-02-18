@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot xmlns:xacro = "http://www.ros.org/wiki/xacro" name = "simplified_snakebot">
+    <material name = "white">
+        <color rgba = "1 1 1 1"/>
+    </material>
+
+    <!-- MODULE ONE-->
+    <!-- First Joint -->
+    <!-- Bottom Bracket-->
+    <link name = "base_link">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.02"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <link name = "m1_bottom_bracket_one">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.045"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+        <collision>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.045"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name = "m1_prismatic_joint" type = "prismatic">
+        <parent link = "base_link"/>
+        <child link = "m1_bottom_bracket_one"/>
+        <axis xyz = "1 0 0"/>
+        <limit lower = "0" upper = "0.02" effort = "1" velocity = "0.01"/>
+        <origin rpy = "0 0 0" xyz = "0 0 0"/>
+    </joint>
+
+    <!-- Second Joint - rotation between two joints -->
+    <link name = "m1_sphere">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <sphere radius = "0.0275"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m1_revolute_one_joint" type = "continuous">
+        <parent link = "m1_bottom_bracket_one"/>
+        <child link = "m1_sphere"/>
+        <axis xyz = "1 0 0"/>
+        <origin xyz = "0.045 0 0"/>
+    </joint>
+
+    <!-- Third Joint - Prismatic -->
+    <link name = "m1_middle_bracket">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.085"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m1_third_joint" type = "fixed">
+        <parent link = "m1_sphere"/>
+        <child link = "m1_middle_bracket"/>
+        <origin rpy = "0 0 0" xyz = "0.07 0 0"/>
+    </joint>
+
+    <!--Fourth Joint - Revolute-->
+    <link name = "m1_sphere_two">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <sphere radius = "0.0275"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m1_fourth_joint" type = "fixed">
+        <parent link = "m1_middle_bracket"/>
+        <child link = "m1_sphere_two"/>
+        <origin rpy = "0 0 0" xyz = "0.055 0 0"/>
+    </joint>
+
+    <!--Fifth Joint - Revolute -->
+    <link name = "m1_top_bracket">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.055"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m1_revolute_two_joint" type = "revolute">
+        <parent link = "m1_sphere_two"/>
+        <child link = "m1_virtual_link"/>
+        <axis xyz = "0 1 0"/>
+        <limit lower = "-0.5" upper = "0.5" effort = "1" velocity = "0.01"/>
+        <origin rpy = "0 0 0" xyz = "0.055 0 0"/>
+    </joint>
+    <!-- adding infinitesimally small link-->
+    <link name = "m1_virtual_link"/>
+    <joint name = "m1_revolute_three_joint" type = "revolute">
+        <parent link = "m1_virtual_link"/>
+        <child link = "m1_top_bracket"/>
+        <axis xyz = "0 0 1"/>
+        <limit lower = "-0.5" upper = "0.5" effort = "1" velocity = "0.01"/>
+        <origin rpy = "0 0 0" xyz = "0 0 0"/>
+    </joint>
+
+    <!-- Module Two-->
+    <!-- Final Fixed Joint-->
+    <link name = "m2_base_link">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.02"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m1_final_joint" type = "fixed">
+        <parent link = "m1_top_bracket"/>
+        <child link = "m2_base_link"/>
+        <origin xyz = "0.0275 0 0"/>
+    </joint>
+
+    
+    <!-- First Joint -->
+    <!-- Bottom Bracket-->
+    
+    <link name = "m2_bottom_bracket_one">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.045"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+        <collision>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.045"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name = "m2_prismatic_joint" type = "prismatic">
+        <parent link = "m2_base_link"/>
+        <child link = "m2_bottom_bracket_one"/>
+        <axis xyz = "1 0 0"/>
+        <limit lower = "0" upper = "0.02" effort = "1" velocity = "0.01"/>
+        <origin rpy = "0 0 0" xyz = "0 0 0"/>
+    </joint>
+
+    <!-- Second Joint - rotation between two joints -->
+    <link name = "m2_sphere">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <sphere radius = "0.0275"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m2_revolute_one_joint" type = "continuous">
+        <parent link = "m2_bottom_bracket_one"/>
+        <child link = "m2_sphere"/>
+        <axis xyz = "1 0 0"/>
+        <origin xyz = "0.045 0 0"/>
+    </joint>
+
+    <!-- Third Joint - Prismatic -->
+    <link name = "m2_middle_bracket">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.085"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m2_third_joint" type = "fixed">
+        <parent link = "m2_sphere"/>
+        <child link = "m2_middle_bracket"/>
+        <origin rpy = "0 0 0" xyz = "0.07 0 0"/>
+    </joint>
+
+    <!--Fourth Joint - Revolute-->
+    <link name = "m2_sphere_two">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <sphere radius = "0.0275"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m2_fourth_joint" type = "fixed">
+        <parent link = "m2_middle_bracket"/>
+        <child link = "m2_sphere_two"/>
+        <origin rpy = "0 0 0" xyz = "0.055 0 0"/>
+    </joint>
+
+    <!--Fifth Joint - Revolute -->
+    <link name = "m2_top_bracket">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.055"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m2_revolute_two_joint" type = "revolute">
+        <parent link = "m2_sphere_two"/>
+        <child link = "m2_virtual_link"/>
+        <axis xyz = "0 1 0"/>
+        <limit lower = "-0.5" upper = "0.5" effort = "1" velocity = "0.01"/>
+        <origin rpy = "0 0 0" xyz = "0.055 0 0"/>
+    </joint>
+    <!-- adding infinitesimally small link-->
+    <link name = "m2_virtual_link"/>
+    <joint name = "m2_revolute_three_joint" type = "revolute">
+        <parent link = "m2_virtual_link"/>
+        <child link = "m2_top_bracket"/>
+        <axis xyz = "0 0 1"/>
+        <limit lower = "-0.5" upper = "0.5" effort = "1" velocity = "0.01"/>
+        <origin rpy = "0 0 0" xyz = "0 0 0"/>
+    </joint>
+
+    <!-- Module Three-->
+    <!-- Final Fixed Joint-->
+    <link name = "m3_base_link">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.02"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m3_final_joint" type = "fixed">
+        <parent link = "m2_top_bracket"/>
+        <child link = "m3_base_link"/>
+        <origin xyz = "0.0275 0 0"/>
+    </joint>
+
+    
+    <!-- First Joint -->
+    <!-- Bottom Bracket-->
+    
+    <link name = "m3_bottom_bracket_one">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.045"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+        <collision>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.045"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name = "m3_prismatic_joint" type = "prismatic">
+        <parent link = "m3_base_link"/>
+        <child link = "m3_bottom_bracket_one"/>
+        <axis xyz = "1 0 0"/>
+        <limit lower = "0" upper = "0.02" effort = "1" velocity = "0.01"/>
+        <origin rpy = "0 0 0" xyz = "0 0 0"/>
+    </joint>
+
+    <!-- Second Joint - rotation between two joints -->
+    <link name = "m3_sphere">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <sphere radius = "0.0275"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m3_revolute_one_joint" type = "continuous">
+        <parent link = "m3_bottom_bracket_one"/>
+        <child link = "m3_sphere"/>
+        <axis xyz = "1 0 0"/>
+        <origin xyz = "0.045 0 0"/>
+    </joint>
+
+    <!-- Third Joint - Prismatic -->
+    <link name = "m3_middle_bracket">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.085"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m3_third_joint" type = "fixed">
+        <parent link = "m3_sphere"/>
+        <child link = "m3_middle_bracket"/>
+        <origin rpy = "0 0 0" xyz = "0.07 0 0"/>
+    </joint>
+
+    <!--Fourth Joint - Revolute-->
+    <link name = "m3_sphere_two">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <sphere radius = "0.0275"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m3_fourth_joint" type = "fixed">
+        <parent link = "m3_middle_bracket"/>
+        <child link = "m3_sphere_two"/>
+        <origin rpy = "0 0 0" xyz = "0.055 0 0"/>
+    </joint>
+
+    <!--Fifth Joint - Revolute -->
+    <link name = "m3_top_bracket">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.055"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m3_revolute_two_joint" type = "revolute">
+        <parent link = "m3_sphere_two"/>
+        <child link = "m3_virtual_link"/>
+        <axis xyz = "0 1 0"/>
+        <limit lower = "-0.5" upper = "0.5" effort = "1" velocity = "0.01"/>
+        <origin rpy = "0 0 0" xyz = "0.055 0 0"/>
+    </joint>
+    <!-- adding infinitesimally small link-->
+    <link name = "m3_virtual_link"/>
+    <joint name = "m3_revolute_three_joint" type = "revolute">
+        <parent link = "m3_virtual_link"/>
+        <child link = "m3_top_bracket"/>
+        <axis xyz = "0 0 1"/>
+        <limit lower = "-0.5" upper = "0.5" effort = "1" velocity = "0.01"/>
+        <origin rpy = "0 0 0" xyz = "0 0 0"/>
+    </joint>
+
+    <!-- Module Four-->
+    <!-- Final Fixed Joint-->
+    <link name = "m4_base_link">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.02"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m4_final_joint" type = "fixed">
+        <parent link = "m3_top_bracket"/>
+        <child link = "m4_base_link"/>
+        <origin xyz = "0.0275 0 0"/>
+    </joint>
+
+    
+    <!-- First Joint -->
+    <!-- Bottom Bracket-->
+    
+    <link name = "m4_bottom_bracket_one">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.045"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+        <collision>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.045"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name = "m4_prismatic_joint" type = "prismatic">
+        <parent link = "m4_base_link"/>
+        <child link = "m4_bottom_bracket_one"/>
+        <axis xyz = "1 0 0"/>
+        <limit lower = "0" upper = "0.02" effort = "1" velocity = "0.01"/>
+        <origin rpy = "0 0 0" xyz = "0 0 0"/>
+    </joint>
+
+    <!-- Second Joint - rotation between two joints -->
+    <link name = "m4_sphere">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <sphere radius = "0.0275"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m4_revolute_one_joint" type = "continuous">
+        <parent link = "m4_bottom_bracket_one"/>
+        <child link = "m4_sphere"/>
+        <axis xyz = "1 0 0"/>
+        <origin xyz = "0.045 0 0"/>
+    </joint>
+
+    <!-- Third Joint - Prismatic -->
+    <link name = "m4_middle_bracket">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.085"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m4_third_joint" type = "fixed">
+        <parent link = "m4_sphere"/>
+        <child link = "m4_middle_bracket"/>
+        <origin rpy = "0 0 0" xyz = "0.07 0 0"/>
+    </joint>
+
+    <!--Fourth Joint - Revolute-->
+    <link name = "m4_sphere_two">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <sphere radius = "0.0275"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m4_fourth_joint" type = "fixed">
+        <parent link = "m4_middle_bracket"/>
+        <child link = "m4_sphere_two"/>
+        <origin rpy = "0 0 0" xyz = "0.055 0 0"/>
+    </joint>
+
+    <!--Fifth Joint - Revolute -->
+    <link name = "m4_top_bracket">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.05" length = "0.055"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m4_revolute_two_joint" type = "revolute">
+        <parent link = "m4_sphere_two"/>
+        <child link = "m4_virtual_link"/>
+        <axis xyz = "0 1 0"/>
+        <limit lower = "-0.5" upper = "0.5" effort = "1" velocity = "0.01"/>
+        <origin rpy = "0 0 0" xyz = "0.055 0 0"/>
+    </joint>
+    <!-- adding infinitesimally small link-->
+    <link name = "m4_virtual_link"/>
+    <joint name = "m4_revolute_three_joint" type = "revolute">
+        <parent link = "m4_virtual_link"/>
+        <child link = "m4_top_bracket"/>
+        <axis xyz = "0 0 1"/>
+        <limit lower = "-0.5" upper = "0.5" effort = "1" velocity = "0.01"/>
+        <origin rpy = "0 0 0" xyz = "0 0 0"/>
+    </joint>
+</robot>

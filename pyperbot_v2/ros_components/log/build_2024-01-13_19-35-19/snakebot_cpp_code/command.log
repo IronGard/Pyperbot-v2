@@ -1,0 +1,4 @@
+Invoking command in '/home/hahnlam/snakebot_ws/build/snakebot_cpp_code': /usr/bin/cmake --build /home/hahnlam/snakebot_ws/build/snakebot_cpp_code -- -j12 -l12
+Invoked command in '/home/hahnlam/snakebot_ws/build/snakebot_cpp_code' returned '0': /usr/bin/cmake --build /home/hahnlam/snakebot_ws/build/snakebot_cpp_code -- -j12 -l12
+Invoking command in '/home/hahnlam/snakebot_ws/build/snakebot_cpp_code': /usr/bin/cmake --install /home/hahnlam/snakebot_ws/build/snakebot_cpp_code
+Invoked command in '/home/hahnlam/snakebot_ws/build/snakebot_cpp_code' returned '0': /usr/bin/cmake --install /home/hahnlam/snakebot_ws/build/snakebot_cpp_code

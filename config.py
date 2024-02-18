@@ -14,6 +14,8 @@ def config_setup():
     parser.add_argument('-en', '--env', help = "Simulation environment to be used")
     parser.add_argument('-t', '--terrain', help = "Terrain to be used for the simulation")
     parser.add_argument('-ep', '--episodes', help = "Number of training iterations")
+    parser.add_argument('-n', '--num_goals', help = "Number of goals to be used in the simulation")
+    parser.add_argument('-s', '--seed', help = "Seed for the simulation")
     args = vars(parser.parse_args())
 
     #open and read config parser
@@ -22,7 +24,9 @@ def config_setup():
                          'episodes': 1000,
                          'algo': 'PPO',
                          'env': 'SnakebotEnv',
-                         'terrain': 'Plane'}
+                         'terrain': 'Plane',
+                         'num_goals': 1,
+                         'seed': 0}
 
 
     #check if user entered necessary parameters:

@@ -1,0 +1,4 @@
+source;share/snakebot_description/local_setup.bash
+source;share/snakebot_description/local_setup.dsv
+source;share/snakebot_description/local_setup.sh
+source;share/snakebot_description/local_setup.zsh
