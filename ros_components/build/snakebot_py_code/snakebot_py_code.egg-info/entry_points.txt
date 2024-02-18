@@ -1,5 +1,0 @@
-[console_scripts]
-parameter = snakebot_py_code.parameter:main
-simple_publisher = snakebot_py_code.simple_publisher:main
-simple_subscriber = snakebot_py_code.simple_subscriber:main
-
