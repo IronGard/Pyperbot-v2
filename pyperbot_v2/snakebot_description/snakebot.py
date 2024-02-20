@@ -45,14 +45,25 @@ p.resetSimulation()
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
 p.setGravity(0, 0, -9.81)
 p.setRealTimeSimulation(0)
-plane = p.createCollisionShape(p.GEOM_PLANE)
 
-
-# #loading snake robot into the environment
-robot = p.loadURDF("snakebot_description/urdf/updated_snakebot.urdf.xacro", physicsClientId = physicsClient, basePosition = [0, 0, 0], globalScaling = 2)
+#loading the plane
+#plane = p.createCollisionShape(p.GEOM_PLANE)
 planeID = p.loadURDF("plane.urdf", physicsClientId = physicsClient, basePosition = [0, 0, 0])
+
+#loading the maze
+maze_dir = "pyperbot_v2/snakebot_description/meshes/maze_10x10.stl"
+maze_scale = [1, 1, 1]
+maze_visual_id = p.createVisualShape(shapeType=p.GEOM_MESH, fileName=maze_dir, meshScale=maze_scale)
+maze_collision_id = p.createCollisionShape(shapeType=p.GEOM_MESH, fileName=maze_dir, meshScale=maze_scale, flags=1)
+#p.changeDynamics(collision_shape_id, -1, restitution=0)
+maze_body_id = p.createMultiBody(basePosition=[-10, 0, 0], baseVisualShapeIndex=maze_visual_id, baseCollisionShapeIndex=maze_collision_id)
+# 
+# #loading snake robot into the environment
+robot = p.loadURDF("pyperbot_v2/snakebot_description/urdf/updated_snakebot.urdf.xacro", physicsClientId = physicsClient, basePosition = [0.5, 0.5, 0], globalScaling = 2)
+
 # duckID = p.loadURDF("duck_vhacd.urdf", basePosition = [10, 10, 0.2], globalScaling = 1.0, physicsClientId = physicsClient)
-mazeID = p.loadURDF("snakebot_description/urdf/maze.urdf.xacro", basePosition = [5, 0, 0], physicsClientId = physicsClient, globalScaling = 0.05)
+#mazeID = p.loadURDF("snakebot_description/urdf/maze.urdf.xacro", basePosition = [5, 0, 0], physicsClientId = physicsClient, globalScaling = 0.05)
+
 #storing joint info in arrays
 moving_joint_names = []
 moving_joint_inds = []
@@ -63,6 +74,7 @@ base_position_arr = []
 base_orientation_arr = []
 all_joint_positions = []
 all_joint_velocities = []
+
 #breaking joints down into different modules
 module_1 = moving_joint_names[0:5]
 module_2 = moving_joint_names[5:10]
@@ -74,6 +86,7 @@ print(combined_modules)
 #breaking joints into prismatic and revolute joints
 prismatic_joints = [joint for joint in range(p.getNumJoints(robot)) if p.getJointInfo(robot, joint)[2] == p.JOINT_PRISMATIC]
 revolute_joints = [joint for joint in range(p.getNumJoints(robot)) if p.getJointInfo(robot, joint)[2] == p.JOINT_REVOLUTE]
+
 #get specific revolute joints for rotation
 rotating_joints = [joint for joint in range(p.getNumJoints(robot)) if p.getJointInfo(robot, joint)[1].decode("utf-8") in ['joint_3', 'joint_8', 'joint_13', 'joint_18']]
 contracting_joints = [joint for joint in range(p.getNumJoints(robot)) if p.getJointInfo(robot, joint)[1].decode("utf-8") in ['joint_0', 'joint_5', 'joint_10', 'joint_15']]
@@ -242,18 +255,18 @@ axs[0].set_ylabel('Position')
 axs[1].set_ylabel('Orientation')
 axs[0].legend(['x', 'y', 'z'])
 axs[1].legend(['roll', 'pitch', 'yaw', 'alpha'])
-plt.savefig(os.path.join(os.getcwd(), 'results', 'plots', 'position_orientation_plot.png'))
+plt.savefig(os.path.join(os.getcwd(), 'pyperbot_v2', 'results', 'plots', 'position_orientation_plot.png'))
 plt.show()
 
 # #save joint_positions and joint_velocities to csv files
 joint_positions_df = pd.DataFrame(all_joint_positions)
 joint_velocities_df = pd.DataFrame(all_joint_velocities)
-joint_positions_df.to_csv(os.path.join(os.getcwd(), 'results', 'csv', 'joint_positions.csv'))
-joint_velocities_df.to_csv(os.path.join(os.getcwd(), 'results', 'csv', 'joint_velocities.csv'))
+joint_positions_df.to_csv(os.path.join(os.getcwd(), 'pyperbot_v2', 'results', 'csv', 'joint_positions.csv'))
+joint_velocities_df.to_csv(os.path.join(os.getcwd(), 'pyperbot_v2', 'results', 'csv', 'joint_velocities.csv'))
 
 #Getting joint values frm joint_positions.csv
 joint_values = np.zeros((4,5))
-csv_file_path = os.path.join(os.getcwd(), 'results', 'csv', 'joint_positions.csv')
+csv_file_path = os.path.join(os.getcwd(), 'pyperbot_v2', 'results', 'csv', 'joint_positions.csv')
 sample_step = 20
 counter = 0
 starting_sample = 150

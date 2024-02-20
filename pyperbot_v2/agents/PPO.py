@@ -84,7 +84,8 @@ class PPOAgent:
         return torch.tensor(returns, dtype = torch.float32)
 
     #CLIP function
-    def clip(self)
+    def clip(self, x, low, high):
+        return min(max(x, low), high)
     
     def update(self, states, actions, log_probs, returns, advantages):
         for _ in range(self.k_epochs):
