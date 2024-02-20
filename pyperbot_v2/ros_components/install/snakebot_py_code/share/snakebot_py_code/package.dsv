@@ -1,6 +1,0 @@
-source;share/snakebot_py_code/hook/pythonpath.ps1
-source;share/snakebot_py_code/hook/pythonpath.dsv
-source;share/snakebot_py_code/hook/pythonpath.sh
-source;share/snakebot_py_code/hook/ament_prefix_path.ps1
-source;share/snakebot_py_code/hook/ament_prefix_path.dsv
-source;share/snakebot_py_code/hook/ament_prefix_path.sh

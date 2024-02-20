@@ -9,18 +9,12 @@ from gymnasium import spaces, register
 import argparse
 
 
-#SB3 Imports
-import stable_baselines3 as sb3
-from stable_baselines3 import PPO
-from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.vec_env import VecNormalize, DummyVecEnv
-from stable_baselines3.common.callbacks import EvalCallback, CheckpointCallback, CallbackList
-from stable_baselines3.common.evaluation import evaluate_policy
-from stable_baselines3.common.env_checker import check_env
-
 #torch imports
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.tensorboard import SummaryWriter
+import numpy as np
 
 #rl_zoo3 import
 from rl_zoo3.train import train
@@ -40,54 +34,74 @@ def parse_args():
     parser.add_argument('--seed', type=int, default = 0, help = "Seed for the environment")
     parser.add_argument('--model', type=str, default = "PPO", help = "Name of the model to use")
     parser.add_argument('--cuda', type = bool, default = True, help = "If enabled, cuda will be used by default.")
+    vars = parser.parse_args()
+    return vars
 
-#Define four cardinal directions for snake robot
-LEFT = 0 #left direction
-RIGHT = 1 #right direction
-FORWARD = 2 #forward direction
-BACKWARD = 3 #backward direction
+#Define actor-critic network class for PPO algorithm
+class ActorCritic(nn.Module):
+    def __init__(self, num_inputs, num_actions, hidden_size, learning_rate = 3e-4):
+        super(ActorCritic, self).__init__()
+        self.num_actions = num_actions
+        self.linear1 = nn.Linear(num_inputs, hidden_size)
+        self.linear2 = nn.Linear(hidden_size, hidden_size)
+        self.actor = nn.Linear(hidden_size, num_actions)
+        self.critic = nn.Linear(hidden_size, 1)
+        self.writer = SummaryWriter()
 
-#define snakebot_env class from other work
-class SnakebotEnv(gym.Env):
-    ''' 
-    Class for environment for the snake robot.
-    '''
-    def __init__(self, grid_dimensions = [200, 200], render_mode = 'GUI'):
-        '''
-        Constructor for Snakebot Env Class
-        '''
-        super(SnakebotEnv, self).__init__()
-        self.render_mode = render_mode
-        self.agent_pos = [0,0]
-        self.agent_dir = FORWARD
-        self.grid_dimensions = grid_dimensions
-        self.action_space = spaces.Discrete(4) #Go forward, back, left and right -> four actions
-        self.observation_space = spaces.Box(
-            low = np.array([0,0]), high = np.array([self.grid_dimensions[0], self.grid_dimensions[1]]),
-            dtype = np.float32
-        )
-    def step(self, action):
-        if action == self.LEFT:
-            self.agent_pos = [self.agent_pos[0] - 1, self.agent_pos[1]]
-        if action == self.RIGHT: 
-            self.agent_pos = [self.agent_pos[0] + 1, self.agent_pos[1]]
-        if action == self.FORWARD:
-            self.agent_pos = [self.agent_pos[0], self.agent_pos[1] + 1]
-        if action == self.BACKWARD:
-            self.agent_pos = [self.agent_pos[0], self.agent_pos[1] - 1]
-        else:
-            raise ValueError(
-                'Action should be an integer between 0 and 3, inclusive'
-            )
-    def seed(self, seed = None):
-        pass
-    def reset(self, seed = None, options = None):
-        super.reset(seed = seed, options = options)
-        self.agent_pos = [0,0]
-        self.agent_dir = FORWARD
-        return np.array([self.agent_pos])
-    def render(self, mode = 'GUI'):
-        if self.render_mode = 
-    def close(self):
-        pass
+    def forward(self, state):
+        x = F.relu(self.linear1(state))
+        x = F.relu(self.linear2(x))
+        logits = self.actor(x)
+        value = self.critic(x)
+        return logits, value
+    
+#Define the PPO agent class
+class PPOAgent:
+    def __init__(self, env, client, num_inputs, num_actions, hidden_size, eps_clip, k_epochs = 10, lr = 1e-03, gamma = 0.99):
+        self.env = env
+        self.client = client
+        self.actor_critic = ActorCritic(num_inputs, num_actions, hidden_size, lr)
+        self.optimizer = torch.optim.Adam(self.actor_critic.parameters(), lr = lr)
+        self.eps_clip = eps_clip
+        self.gammaa = gamma
+        self.k_epochs = k_epochs
+
+    def get_action(self, state):
+        state = torch.tensor(state, dtype = torch.float32)
+        logits, value = self.actor_critic(state)
+        action_probs = F.softmax(logits, dim = -1)
+        action = action_probs.multinomial(num_samples = 1)
+        return action, value
+    
+    def compute_returns(self, rewards, dones, next_value)
+        returns = []
+        discounted_reward = next_value
+        for reward, done in zip(reversed(rewards), reversed(dones)):
+            if done:
+                discounted_reward = 0
+            discounted_reward = reward + (self.gamma * discounted_reward)
+            returns.insert(0, discounted_reward)
+        return torch.tensor(returns, dtype = torch.float32)
+
+    #CLIP function
+    def clip(self)
+    
+    def update(self, states, actions, log_probs, returns, advantages):
+        for _ in range(self.k_epochs):
+            new_log_probs, new_value = self.actor_critic(states)
+            ratio = torch.exp(new_log_probs - log_probs)
+            surr1 = ratio * advantages
+            surr2 = torch.clamp(ratio, 1 - self.eps_clip, 1 + self.eps_clip) * advantages
+            actor_loss = -torch.min(surr1, surr2)
+            critic_loss = F.mse_loss(new_value, returns)
+            loss = actor_loss + 0.5 * critic_loss
+            self.optimizer.zero_grad()
+            loss.mean().backward()
+            self.optimizer.step()
+
+            #logging on tensorboard
+            self.writer.add_scalar('Loss/actor_loss', actor_loss.mean().item(), self.i_iter)
+            self.writer.add_scalar('Loss/critic_loss', critic_loss.mean().item(), self.i_iter)
+            self.i_iter += 1
+
     

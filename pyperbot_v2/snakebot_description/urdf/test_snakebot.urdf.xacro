@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<robot xmlns:xacro = "http://www.ros.org/wiki/xacro" name = "simplified_snakebot">
+<!-- Follows updated snakebot but with added inertial components-->
+<robot xmlns:xacro = "http://www.ros.org/wiki/xacro" name = "test_snakebot">
     <material name = "white">
         <color rgba = "1 1 1 1"/>
     </material>
@@ -33,6 +34,11 @@
                 <cylinder radius = "0.05" length = "0.045"/>
             </geometry>
         </collision>
+        <inertial>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <mass value = "0.1"/>
+            <inertia ixx = "0.0001" ixy = "0" ixz = "0" iyy = "0.0001" iyz = "0" izz = "0.0001"/>  
+        </inertial>
     </link>
     <joint name = "m1_joint_zero" type = "prismatic">
         <parent link = "base_link"/>
@@ -79,6 +85,11 @@
                 <cylinder radius = "0.05" length = "0.07"/>
             </geometry>
         </collision>
+        <inertial>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <mass value = "0.1"/>
+            <inertia ixx = "0.0001" ixy = "0" ixz = "0" iyy = "0.0001" iyz = "0" izz = "0.0001"/>
+        </inertial>
     </link>
     <joint name = "m1_third_joint" type = "fixed">
         <parent link = "m1_virtual_link_one"/>
@@ -110,6 +121,11 @@
                 <cylinder radius = "0.05" length = "0.055"/>
             </geometry>
         </collision>
+        <inertial>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <mass value = "0.1"/>
+            <inertia ixx = "0.0001" ixy = "0" ixz = "0" iyy = "0.0001" iyz = "0" izz = "0.0001"/>
+        </inertial>
     </link>
     <link name = "m1_virtual_link"/>
     <joint name = "m1_joint_three" type = "revolute">
@@ -164,6 +180,11 @@
                 <cylinder radius = "0.05" length = "0.045"/>
             </geometry>
         </collision>
+        <inertial>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <mass value = "0.1"/>
+            <inertia ixx = "0.0001" ixy = "0" ixz = "0" iyy = "0.0001" iyz = "0" izz = "0.0001"/>
+        </inertial>
     </link>
     <joint name = "m2_joint_zero" type = "prismatic">
         <parent link = "m2_base_link"/>
@@ -241,6 +262,11 @@
                 <cylinder radius = "0.05" length = "0.055"/>
             </geometry>
         </collision>
+        <inertial>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <mass value = "0.1"/>
+            <inertia ixx = "0.0001" ixy = "0" ixz = "0" iyy = "0.0001" iyz = "0" izz = "0.0001"/>
+        </inertial>
     </link>
     <link name = "m2_virtual_link"/>
     <joint name = "m2_joint_three" type = "revolute">
@@ -289,6 +315,11 @@
                 <cylinder radius = "0.05" length = "0.045"/>
             </geometry>
         </collision>
+        <inertial>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <mass value = "0.1"/>
+            <inertia ixx = "0.0001" ixy = "0" ixz = "0" iyy = "0.0001" iyz = "0" izz = "0.0001"/>
+        </inertial>
     </link>
     <joint name = "m3_joint_zero" type = "prismatic">
         <parent link = "m3_base_link"/>
@@ -335,6 +366,11 @@
                 <cylinder radius = "0.05" length = "0.07"/>
             </geometry>
         </collision>
+        <inertial>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <mass value = "0.1"/>
+            <inertia ixx = "0.0001" ixy = "0" ixz = "0" iyy = "0.0001" iyz = "0" izz = "0.0001"/>
+        </inertial>
     </link>
     <joint name = "m3_third_joint" type = "fixed">
         <parent link = "m3_virtual_link_one"/>
@@ -366,6 +402,11 @@
                 <cylinder radius = "0.05" length = "0.055"/>
             </geometry>
         </collision>
+        <inertial>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <mass value = "0.1"/>
+            <inertia ixx = "0.0001" ixy = "0" ixz = "0" iyy = "0.0001" iyz = "0" izz = "0.0001"/>
+        </inertial>
     </link>
     <link name = "m3_virtual_link"/>
     <joint name = "m3_joint_three" type = "revolute">
@@ -418,6 +459,11 @@
                 <cylinder radius = "0.05" length = "0.045"/>
             </geometry>
         </collision>
+        <inertial>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <mass value = "0.1"/>
+            <inertia ixx = "0.0001" ixy = "0" ixz = "0" iyy = "0.0001" iyz = "0" izz = "0.0001"/>
+        </inertial>
     </link>
     <joint name = "m4_joint_zero" type = "prismatic">
         <parent link = "m4_base_link"/>
@@ -464,6 +510,11 @@
                 <cylinder radius = "0.05" length = "0.07"/>
             </geometry>
         </collision>
+        <inertial>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <mass value = "0.1"/>
+            <inertia ixx = "0.0001" ixy = "0" ixz = "0" iyy = "0.0001" iyz = "0" izz = "0.0001"/>
+        </inertial>
     </link>
     <joint name = "m4_third_joint" type = "fixed">
         <parent link = "m4_virtual_link_one"/>
@@ -495,6 +546,11 @@
                 <cylinder radius = "0.05" length = "0.055"/>
             </geometry>
         </collision>
+        <inertial>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <mass value = "0.1"/>
+            <inertia ixx = "0.0001" ixy = "0" ixz = "0" iyy = "0.0001" iyz = "0" izz = "0.0001"/>
+        </inertial>
     </link>
     <link name = "m4_virtual_link"/>
     <joint name = "m4_joint_three" type = "revolute">
