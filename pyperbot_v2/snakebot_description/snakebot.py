@@ -120,7 +120,7 @@ module_2 = moving_joint_names[5:10]
 module_3 = moving_joint_names[10:15]
 module_4 = moving_joint_names[15:20]
 combined_modules = [module_1, module_2, module_3, module_4]
-#print(combined_modules)
+print(combined_modules)
 
 #breaking joints into prismatic and revolute joints
 prismatic_joints = [joint for joint in range(p.getNumJoints(robot)) if p.getJointInfo(robot, joint)[2] == p.JOINT_PRISMATIC]
@@ -132,7 +132,7 @@ contracting_joints = [joint for joint in range(p.getNumJoints(robot)) if p.getJo
 
 #setting up the joint info
 def get_joint_info(robot):
-    #print('The system has', p.getNumJoints(robot), 'joints')
+    print('The system has', p.getNumJoints(robot), 'joints')
     for i in range(p.getNumJoints(robot)):
         joint_info  = p.getJointInfo(robot, i)
         if joint_info[2] != (p.JOINT_FIXED):
@@ -141,7 +141,7 @@ def get_joint_info(robot):
             moving_joint_types.append(joint_info[2])
             moving_joint_limits.append(joint_info[8:10])
             moving_joint_centers.append((joint_info[8] + joint_info[9])/2)
-            #print('Joint', i, 'is named', joint_info[1], 'and is of type', joint_info[2])
+            print('Joint', i, 'is named', joint_info[1], 'and is of type', joint_info[2])
 
 get_joint_info(robot)
 
@@ -156,7 +156,7 @@ def rearrange_joint_array(joint_position):
 def test():
     time.sleep(2)
     while True:
-        #print("This is running.")
+        print("This is running.")
         time.sleep(1)
 
 def get_num_moving_joints(robot):
@@ -229,11 +229,11 @@ for i in range(2400):
     joint_torques = [state[3] for state in joint_states]
     all_joint_positions.append(joint_positions)
     all_joint_velocities.append(joint_velocities)
-    #print('---------------------')
-    #print('Joint Positions:', joint_positions)
-    #print('Joint Velocities:', joint_velocities)
-    #print('Joint Torques:', joint_torques)
-    #print('---------------------')
+    print('---------------------')
+    print('Joint Positions:', joint_positions)
+    print('Joint Velocities:', joint_velocities)
+    print('Joint Torques:', joint_torques)
+    print('---------------------')
     time.sleep(dt)
 
 def partial_movement():
