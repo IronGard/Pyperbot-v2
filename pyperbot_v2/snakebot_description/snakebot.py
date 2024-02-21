@@ -10,6 +10,7 @@ import numpy as np
 import socket
 import csv
 import sys
+import random
 
 #import the model environment
 import stable_baselines3 as sb3
@@ -47,20 +48,58 @@ p.setGravity(0, 0, -9.81)
 p.setRealTimeSimulation(0)
 
 #loading the plane
-#plane = p.createCollisionShape(p.GEOM_PLANE)
-planeID = p.loadURDF("plane.urdf", physicsClientId = physicsClient, basePosition = [0, 0, 0])
+planeID = p.loadURDF("plane.urdf", 
+                     physicsClientId = physicsClient, 
+                     basePosition = [0, 0, 0])
 
 #loading the maze
 maze_dir = "pyperbot_v2/snakebot_description/meshes/maze_10x10.stl"
 maze_scale = [1, 1, 1]
-maze_visual_id = p.createVisualShape(shapeType=p.GEOM_MESH, fileName=maze_dir, meshScale=maze_scale)
-maze_collision_id = p.createCollisionShape(shapeType=p.GEOM_MESH, fileName=maze_dir, meshScale=maze_scale, flags=1)
-#p.changeDynamics(collision_shape_id, -1, restitution=0)
-maze_body_id = p.createMultiBody(basePosition=[-10, 0, 0], baseVisualShapeIndex=maze_visual_id, baseCollisionShapeIndex=maze_collision_id)
-# 
-# #loading snake robot into the environment
-robot = p.loadURDF("pyperbot_v2/snakebot_description/urdf/updated_snakebot.urdf.xacro", physicsClientId = physicsClient, basePosition = [0.5, 0.5, 0], globalScaling = 2)
+maze_visual_id = p.createVisualShape(shapeType=p.GEOM_MESH, 
+                                     fileName=maze_dir, 
+                                     meshScale=maze_scale)
+maze_collision_id = p.createCollisionShape(shapeType=p.GEOM_MESH, 
+                                           fileName=maze_dir, 
+                                           meshScale=maze_scale, 
+                                           flags=1)
+maze_body_id = p.createMultiBody(basePosition=[-10, 0, 0], 
+                                 baseVisualShapeIndex=maze_visual_id, baseCollisionShapeIndex=maze_collision_id)
 
+#loading snake robot into the environment
+robot = p.loadURDF("pyperbot_v2/snakebot_description/urdf/updated_snakebot.urdf.xacro", 
+                   physicsClientId = physicsClient, 
+                   basePosition = [0.5, 0.5, 0], 
+                   globalScaling = 2)
+
+#loading the goal (duck) into the environment
+duck_scale = [1, 1, 1]
+shift = [0, -0.02, 0]
+visualShapeId = p.createVisualShape(shapeType=p.GEOM_MESH,
+                                    fileName="duck.obj",
+                                    rgbaColor=[1, 1, 1, 1],
+                                    specularColor=[0.4, 0.4, 0],
+                                    visualFramePosition=shift,
+                                    meshScale=duck_scale)
+
+collisionShapeId = p.createCollisionShape(shapeType=p.GEOM_MESH,
+                                          fileName="duck_vhacd.obj",
+                                          collisionFramePosition=shift,
+                                          meshScale=duck_scale)
+
+#Generate random coordinates for the goal
+num_goal = 3
+x, y = [], []
+for i in range(num_goal):
+    x.append(random.randrange(-9, 9, 2))
+    y.append(random.randrange(1, 19, 2))
+    p.createMultiBody(baseMass=1,
+                    baseInertialFramePosition=[0, 0, 0],
+                    baseCollisionShapeIndex=collisionShapeId,
+                    baseVisualShapeIndex=visualShapeId,
+                    baseOrientation=[0, 45, 45, 0],
+                    basePosition=[x[i], y[i], 0])
+
+#baseInertialFramePosition=[0, 0, 0],
 # duckID = p.loadURDF("duck_vhacd.urdf", basePosition = [10, 10, 0.2], globalScaling = 1.0, physicsClientId = physicsClient)
 #mazeID = p.loadURDF("snakebot_description/urdf/maze.urdf.xacro", basePosition = [5, 0, 0], physicsClientId = physicsClient, globalScaling = 0.05)
 
@@ -81,7 +120,7 @@ module_2 = moving_joint_names[5:10]
 module_3 = moving_joint_names[10:15]
 module_4 = moving_joint_names[15:20]
 combined_modules = [module_1, module_2, module_3, module_4]
-print(combined_modules)
+#print(combined_modules)
 
 #breaking joints into prismatic and revolute joints
 prismatic_joints = [joint for joint in range(p.getNumJoints(robot)) if p.getJointInfo(robot, joint)[2] == p.JOINT_PRISMATIC]
@@ -93,7 +132,7 @@ contracting_joints = [joint for joint in range(p.getNumJoints(robot)) if p.getJo
 
 #setting up the joint info
 def get_joint_info(robot):
-    print('The system has', p.getNumJoints(robot), 'joints')
+    #print('The system has', p.getNumJoints(robot), 'joints')
     for i in range(p.getNumJoints(robot)):
         joint_info  = p.getJointInfo(robot, i)
         if joint_info[2] != (p.JOINT_FIXED):
@@ -102,7 +141,7 @@ def get_joint_info(robot):
             moving_joint_types.append(joint_info[2])
             moving_joint_limits.append(joint_info[8:10])
             moving_joint_centers.append((joint_info[8] + joint_info[9])/2)
-            print('Joint', i, 'is named', joint_info[1], 'and is of type', joint_info[2])
+            #print('Joint', i, 'is named', joint_info[1], 'and is of type', joint_info[2])
 
 get_joint_info(robot)
 
@@ -117,7 +156,7 @@ def rearrange_joint_array(joint_position):
 def test():
     time.sleep(2)
     while True:
-        print("This is running.")
+        #print("This is running.")
         time.sleep(1)
 
 def get_num_moving_joints(robot):
@@ -190,11 +229,11 @@ for i in range(2400):
     joint_torques = [state[3] for state in joint_states]
     all_joint_positions.append(joint_positions)
     all_joint_velocities.append(joint_velocities)
-    print('---------------------')
-    print('Joint Positions:', joint_positions)
-    print('Joint Velocities:', joint_velocities)
-    print('Joint Torques:', joint_torques)
-    print('---------------------')
+    #print('---------------------')
+    #print('Joint Positions:', joint_positions)
+    #print('Joint Velocities:', joint_velocities)
+    #print('Joint Torques:', joint_torques)
+    #print('---------------------')
     time.sleep(dt)
 
 def partial_movement():
