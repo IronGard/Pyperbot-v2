@@ -1,19 +1,31 @@
-#------------------------------------
+#-----------------------------------------------------------------------------------------
+# Prerequisites:
+#   For GUI ouput of pybullet, visual server must be installed in the host.
+#   The server  "Vcxsrv" can be installed from:
+#       https://github.com/ArcticaProject/vcxsrv/releases/tag/1.17.0.0-3
+#   or if chocolaty is available:
+#       choco install vcxsrv
+#
+# This container only supports pybullet GUI if Vcxsrc is installed, 
+# change the code in snakebot.py to p.connect(p.DIRECT) instead if Vcxsrc is not available.
+#
 # To build the image, do:
 #   docker build --pull --rm -f "Dockerfile" -t pyperbotv2:v2 "."
-# To run the container, do:
+# To run the container (assuming currently at the root directory of the project), do:
 #   docker run -it --rm -v .:/pyperbot_v2 pyperbotv2:v2
+# To enable X-server forwarding, do:
+#   export DISPLAY=<your_ip>:0.0
 # To run the snakebot.py, do:
 #   python pyperbot_v2/snakebot_description/snakebot.py
-# The container currently does not support pybullet GUI, use p.connect(p.DIRECT) instead.
-#------------------------------------
-# Use a base image with necessary dependencies for graphics
+#-------------------------------------------------------------------------------------------
+
+# Use the python 3.11 base image (tensorflow cannot be installed if python version>3.11)
 FROM python:3.11
 
 # Define the root directory inside the container
 WORKDIR /pyperbot_v2
 
-# Update apt-get, then install ffmpeg, swig, and X11 libraries
+# Update apt-get, then install ffmpeg and swig libraries
 RUN apt-get update && \
     apt-get install -y \
     ffmpeg \
