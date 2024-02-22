@@ -1,0 +1,11 @@
+[DEFAULT]
+filename = main.py
+episodes = 1000
+algo = PPO
+env = SnakebotEnv
+terrain = Plane
+num_goals = 1
+seed = 0
+
+[USER]
+
