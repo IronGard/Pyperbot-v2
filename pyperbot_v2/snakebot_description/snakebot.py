@@ -22,22 +22,27 @@ from stable_baselines3.common.env_util import make_vec_env
 # sys.path.append(os.path.join(resources_dir, '..'))
 # from resources.goal import Human, Duck
 
+from snakebot_argparse import parse_args
+
+args = parse_args()
+print(args)
 #====================================CONSTANTS====================================
 #Defining the server constants
 host = '0.0.0.0'
 port = 6969
 
 #Defining snake movement/sinusoidal movement parameters
-dt = 1./240. #Period in pybullet
-SNAKE_PERIOD = 0.1 #snake speed
-waveLength = 0.25
-wavePeriod = 0.5
-waveAmplitude = 1
-waveFront = 0.0
-segmentLength = 0.05
-steering = 0.0
-amp = 0.2
-offset = 0.6
+dt = args.delta_time #Period in pybullet
+SNAKE_PERIOD = args.snake_period #Period of the snake
+waveLength = args.waveLength #Wave length of the snake
+wavePeriod = args.wavePeriod #Wave period of the snake
+waveAmplitude = args.waveAmplitude #Amplitude of the snake
+waveFront = args.waveFront #Front of the wave of the snake
+segmentLength = args.segmentLength #Length of the snake
+steering = args.steering #Steering of the snake
+amp = args.amp #Amplitude of the snake
+offset = args.offset #Offset of the snake
+num_goals = args.num_goals #Number of goals
 #================================================================================
 
 #setting up the pybullet environment
@@ -87,9 +92,8 @@ collisionShapeId = p.createCollisionShape(shapeType=p.GEOM_MESH,
                                           meshScale=duck_scale)
 
 #Generate random coordinates for the goal
-num_goal = 3
 x, y = [], []
-for i in range(num_goal):
+for i in range(num_goals):
     x.append(random.randrange(-9, 9, 2))
     y.append(random.randrange(1, 19, 2))
     p.createMultiBody(baseMass=1,
