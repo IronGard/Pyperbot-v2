@@ -1,15 +1,18 @@
 #-----------------------------------------------------------------------------------------
 # Prerequisites:
 #   For GUI ouput of pybullet, visual server must be installed in the host.
-#   The server  "Vcxsrv" can be installed from:
+#   The server Vcxsrv can be installed from:
 #       https://github.com/ArcticaProject/vcxsrv/releases/tag/1.17.0.0-3
 #   or if chocolaty is available:
 #       choco install vcxsrv
+#   Select the "Disable access control" option when setting up Vcxsrv.
 #
-# This container only supports pybullet GUI if Vcxsrc is installed, 
-# change the code in snakebot.py to p.connect(p.DIRECT) instead if Vcxsrc is not available.
-#
-# To build the image, do:
+# This container only supports pybullet GUI if Vcxsrc is installed. 
+# Change the code in snakebot.py to p.connect(p.DIRECT) instead if Vcxsrc is not available.
+# 
+# To pull the image from dockerhub, do:
+#   docker image pull isaaccheung0930/pyperbotv2
+# To build the image on host pc, do:
 #   docker build --pull --rm -f "Dockerfile" -t pyperbotv2:v2 "."
 # To run the container (assuming currently at the root directory of the project), do:
 #   docker run -it --rm -v .:/pyperbot_v2 pyperbotv2:v2
