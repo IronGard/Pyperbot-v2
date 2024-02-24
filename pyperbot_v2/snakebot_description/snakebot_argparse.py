@@ -3,8 +3,12 @@ import os
 import sys
 
 def parse_args():
+    '''
+    Function to accept arguments to control the sinusoidal movement of the snake robot.
+    '''
     parser = argparse.ArgumentParser(description='Snakebot')
     parser.add_argument('-m', '--mode', type = str, default = 'p.GUI', help = 'Mode: p.DIRECT or p.GUI')
+    parser.add_argument('-e', '--env', type = str, default = 'snakebot', help = 'Environment: maze, default, snakebot, hills etc.')
     parser.add_argument('-ng', '--num_goals', type = int, default = 3, help = 'Number of goals')
     parser.add_argument('-dt', '--delta_time', type = float, default = 1./240., help = 'Time step')
     parser.add_argument('-sp', '--snake_period', type = float, default = 0.1, help = 'Period of the snake')

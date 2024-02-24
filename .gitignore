@@ -6,3 +6,5 @@ example_images/*
 .env/*
 pyperbot_v2/results/videos/*
 pyperbot_v2/ros_components/*
+pyperbot_v2/snakebot_description/__pycache__/*
+pyperbot_v2/results/*

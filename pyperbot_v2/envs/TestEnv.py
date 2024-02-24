@@ -21,12 +21,12 @@ class TestEnv(gym.Env):
         #Observation space - 8 dimensional continuous array - x,y,z position and orientation of base, remaining distance to goal, and velocity of the robot
         #we require a general number of the infomration.
         self.observation_space = gym.spaces.Box(
-            low = np.array([0, 0, 0, -3.1415, -3.1415, -3.1415, 0]),
-            high = np.array([200, 200, 200, 3.1415, 3.1415, 3.1415, 100]),
+            low = np.array([0, 0, 0, -3.1415, -3.1415, -3.1415, 0, 0]), #first three are base position, next three are base orientation, next is velocity, last is distance to goal
+            high = np.array([200, 200, 200, 3.1415, 3.1415, 3.1415, 100, 20]),
             dtype = np.float32
         )
         self.random, _ = gym.utils.seeding.np_random() #setting the seed for the RL environment
-        self.client = p.connect(p.DIRECT) #use direct client for now - some issues with GUI client.
+        self.client = p.connect(p.GUI) #use direct client for now - some issues with GUI client.
         p.setAdditionalSearchPath(pybullet_data.getDataPath()) #get the plane.urdf and other URDF files available on bullet3/examples.
         p.setTimeStep(0.01, self.client)
         p.setGravity(0, 0, -9.81)
@@ -49,20 +49,26 @@ class TestEnv(gym.Env):
         self.snake.apply_action(action)
         p.stepSimulation() 
         snake_joint_obs = self.snake.get_joint_observation() #here we primarily want the joint positions, not velocities
-        snake_base_obs = self.snake.get_base_observation()
+        base_pos, base_ori = self.snake.get_base_observation()
         dist_to_goal = self.get_dist_to_goal()
         #set the reward based on improvement in distance to goal
         reward = max(self.prev_dist_to_goal - dist_to_goal, 0)
         #if the snake runs off boundaries of the grid, self.done == True
-        if (snake_base_obs[0] < 0) or (snake_base_obs[0] > 200):
+        if (all(x < 0 for x in base_pos)) or (all(x>200 for x in base_pos)):
             self.done = True
             reward = -50
         #if the distance to goal is less than threshold, we can set self.done == True
         elif dist_to_goal < 0.5:
             self.done = True
             reward = 50
-        return (snake_joint_obs[0], reward, self.done, False, {"obs": snake_joint_obs})
+        #get the basevelocity of the snake
+        base_velocity, _ = p.getBaseVelocity(self.snake.get_ids()[0], self.client)
+        #calculate normalised linear velocity of snake
+        linear_velocity = np.linalg.norm(base_velocity)
+        observation = np.array(list(base_pos) + list(base_ori) + [linear_velocity, dist_to_goal], dtype = float32)
+        return (observation, reward, self.done, False, {"obs": snake_joint_obs})
         #change returned observation to be a numpy array instead of a list.
+
     def seed(self, seed = None):
         #Generate seed for the environment
         self.random, seed = gym.utils.seeding.np_random(seed)
@@ -78,7 +84,7 @@ class TestEnv(gym.Env):
         '''
         Resets the simulation and returns the first observation. We may prescribe this to be the current dist_to_goal
         '''
-        p.resetSimulation(self.client)
+        p.resetSimulation(self.client) #reset the simulation
         p.setGravity(0, 0, -9.81)
         self.snake = Snakebot(self.client)
         self.goal = np.random.rand(3) * 200 #insert goal in random position
@@ -87,9 +93,17 @@ class TestEnv(gym.Env):
         #add visual element of goal (TODO)
         # Goal(self.client, self.goal)
         self.joint_ob = self.snake.get_joint_observation()
-        self.base_ob = self.snake.get_base_observation()
+        base_pos, ori = self.snake.get_base_observation()[0], self.snake.get_base_observation()[1]
+        print(base_pos)
+        print(ori)
+        dist_to_goal = self.get_dist_to_goal()
+        base_velocity, _ = p.getBaseVelocity(self.snake.get_ids()[0], self.client)
+        linear_velocity = np.linalg.norm(base_velocity)
+        print(linear_velocity)
+        print(dist_to_goal)
+        observation = np.array(list(base_pos) + list(ori) + [linear_velocity, dist_to_goal], dtype = np.float32)
         #TODO: fix to get the actual observation to ensure that the data returned is actually in the observation space
-        return (self.prev_dist_to_goal, {"obs": self.joint_ob})
+        return (observation, {"obs": self.joint_ob})
     
     def render(self, mode = 'human'):
         '''

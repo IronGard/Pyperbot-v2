@@ -14,6 +14,7 @@ class Snakebot:
         print(robot_name)
         self.robot = p.loadURDF(robot_name, [0, 0, 0], globalScaling = 2.0, physicsClientId = client)
         self.planeID = p.loadURDF("plane.urdf", [0, 0, 0], physicsClientId = client)
+        self.mazeID = p.loadURDF("maze.urdf")
         #getting prismatic joints and revolute joints from the robot
         self.moving_joints = [p.getJointInfo(self.robot, joint, physicsClientId = client) for joint in range(p.getNumJoints(self.robot, physicsClientId = client)) if p.getJointInfo(self.robot, joint, physicsClientId = client)[2] != p.JOINT_FIXED]
         self.prismatic_joints = [joint for joint in range(p.getNumJoints(self.robot, physicsClientId = client)) if p.getJointInfo(self.robot, joint, physicsClientId = client)[2] == p.JOINT_PRISMATIC]
@@ -58,14 +59,8 @@ class Snakebot:
         Compute the sum to return an individual float as the observation value.
         '''
         pos, ang = p.getBasePositionAndOrientation(self.robot, self.client)
-        ang = p.getEulerFromQuaternion(ang)
-        ori = (math.cos(ang[2]), math.sin(ang[2]))
-        pos = pos[:2]
-
-        #obtain the base velocity of the robot
-        vel = p.getBaseVelocity(self.robot, self.client)
-        observation = (pos + ori + vel)
-        return observation
+        ori = p.getEulerFromQuaternion(ang)
+        return [pos, ori]
     
     def get_position(self):
         '''
