@@ -53,7 +53,7 @@ num_goals = args.num_goals #Number of goals
 pyb_setup = Loader("--mp4=results/videos/training_video.mp4")
 pyb_setup.plane()
 pyb_setup.maze("pyperbot_v2/snakebot_description/meshes/maze_10x10.stl")
-robot = pyb_setup.robot("pyperbot_v2/snakebot_description/urdf/full_snakebot.urdf.xacro")
+robot = pyb_setup.robot("pyperbot_v2/snakebot_description/urdf/test_snakebot.urdf.xacro")
 pyb_setup.goal(num_goals)
 
 #baseInertialFramePosition=[0, 0, 0],
@@ -180,6 +180,7 @@ for i in range(2400):
     base_position_arr.append(pos)
     base_orientation_arr.append(ori)
     p.stepSimulation()
+    camera()
     joint_states = p.getJointStates(robot, moving_joint_inds)
     joint_positions = [state[0] for state in joint_states]
     joint_velocities = [state[1] for state in joint_states]

@@ -32,6 +32,7 @@ class Loader():
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.setGravity(0, 0, -9.81)
         p.setRealTimeSimulation(0)
+        p.setTimeStep(1/240)
 
     def plane(self):
         '''

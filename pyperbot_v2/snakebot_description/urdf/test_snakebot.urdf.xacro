@@ -7,6 +7,15 @@
     <material name = "black">
         <color rgba = "0 0 0 1"/>
     </material>
+    <link name = "head">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <sphere radius = "0.05"/>
+            </geometry>
+            <material name = "black"/>
+        </visual>
+    </link>
     <!-- TODO: UPDATE TO INCLUDE FRICTION + DYNAMICS + INERTIA COMPONENTS FOR LINK-->
     <!-- MODULE ONE-->
     <!-- First Joint -->
@@ -15,11 +24,17 @@
         <visual>
             <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
             <geometry>
-                <cylinder radius = "0.05" length = "0.02"/>
+                <cylinder radius = "0.05" length = "0.01"/>
             </geometry>
             <material name = "white"/>
         </visual>
     </link>
+    <joint name = "head_to_base" type = "fixed">
+        <parent link = "base_link"/>
+        <child link = "head"/>
+        <origin xyz = "-0.02 0 0"/>
+    </joint>
+
     <link name = "m1_bottom_bracket_one">
         <visual>
             <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
@@ -566,5 +581,20 @@
         <axis xyz = "0 1 0"/>
         <limit lower = "-0.5236" upper = "0.5236" effort = "1" velocity = "0.01"/>
         <origin rpy = "0 0 0" xyz = "0.055 0 0"/>
+    </joint>
+
+    <link name = "tail">
+        <visual>
+            <origin rpy = "0 1.5708 0" xyz = "0 0 0"/>
+            <geometry>
+                <cylinder radius = "0.03" length = "0.1"/>
+            </geometry>
+            <material name = "white"/>
+        </visual>
+    </link>
+    <joint name = "m4_to_tail" type = "fixed">
+        <parent link = "m4_top_bracket"/>
+        <child link = "tail"/>
+        <origin xyz = "0.0275 0 0"/>
     </joint>
 </robot>
