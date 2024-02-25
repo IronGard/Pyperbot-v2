@@ -53,7 +53,7 @@ num_goals = args.num_goals #Number of goals
 pyb_setup = Loader("--mp4=results/videos/training_video.mp4")
 pyb_setup.plane()
 pyb_setup.maze("pyperbot_v2/snakebot_description/meshes/maze_10x10.stl")
-robot = pyb_setup.robot("pyperbot_v2/snakebot_description/urdf/updated_snakebot.urdf.xacro")
+robot = pyb_setup.robot("pyperbot_v2/snakebot_description/urdf/full_snakebot.urdf.xacro")
 pyb_setup.goal(num_goals)
 
 #baseInertialFramePosition=[0, 0, 0],

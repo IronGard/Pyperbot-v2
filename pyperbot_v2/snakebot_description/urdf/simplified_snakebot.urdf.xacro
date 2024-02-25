@@ -22,7 +22,6 @@
             <geometry>
                 <mesh filename = "package://snakebot_description/meshes/full_module.stl"/>
             </geometry>
-            +
         </visual>
     </link>
     <joint name = "second_joint" type = "continuous">

@@ -12,12 +12,15 @@ import matplotlib.pyplot as plt
 
 #setting up the environment
 class TestEnv(gym.Env):
-    metadata = {'render_modes': ['human']}
+    metadata = {'render_modes': ['human', 'rgb_array'], 'render_fps': 60}
 
     def __init__(self):
         #initialise environment
         #action space should actually be continuous - each joint can move in between from 0 and 1 different values 
-        self.action_space = gym.spaces.Box(low = -3.1415, high = 3.1415, dtype = np.float32) #20 joints in the snakebot (to be printed + appended to a CSV file)
+        #TODO: need to set action space for prismatic and revolute joints, separately
+        self.action_space = gym.spaces.Box(low = np.array([0, -0.0873, -0.2618, -0.5236, -0.5236, 0, -0.0873, -0.2618, -0.5236, -0.5236, 0, -0.0873, -0.2618, -0.5236, -0.5236, 0, -0.0873, -0.2618, -0.5236, -0.5236]), 
+                                           high = np.array([0.02, 0.0873, 0.2618, 0.5236, 0.5236, 0.02, 0.0873, 0.2618, 0.5236, 0.5236, 0.02, 0.0873, 0.2618, 0.5236, 0.5236, 0.02, 0.0873, 0.2618, 0.5236, 0.5236]), 
+                                           dtype = np.float32) #20 joints in the snakebot (to be printed + appended to a CSV file)
         #Observation space - 8 dimensional continuous array - x,y,z position and orientation of base, remaining distance to goal, and velocity of the robot
         #we require a general number of the infomration.
         self.observation_space = gym.spaces.Box(
@@ -26,7 +29,7 @@ class TestEnv(gym.Env):
             dtype = np.float32
         )
         self.random, _ = gym.utils.seeding.np_random() #setting the seed for the RL environment
-        self.client = p.connect(p.GUI) #use direct client for now - some issues with GUI client.
+        self.client = p.connect(p.DIRECT) #use direct client for now - some issues with GUI client.
         p.setAdditionalSearchPath(pybullet_data.getDataPath()) #get the plane.urdf and other URDF files available on bullet3/examples.
         p.setTimeStep(0.01, self.client)
         p.setGravity(0, 0, -9.81)
@@ -65,7 +68,7 @@ class TestEnv(gym.Env):
         base_velocity, _ = p.getBaseVelocity(self.snake.get_ids()[0], self.client)
         #calculate normalised linear velocity of snake
         linear_velocity = np.linalg.norm(base_velocity)
-        observation = np.array(list(base_pos) + list(base_ori) + [linear_velocity, dist_to_goal], dtype = float32)
+        observation = np.array(list(base_pos) + list(base_ori) + [linear_velocity, dist_to_goal], dtype = np.float32)
         return (observation, reward, self.done, False, {"obs": snake_joint_obs})
         #change returned observation to be a numpy array instead of a list.
 
@@ -78,7 +81,7 @@ class TestEnv(gym.Env):
         '''
         Function to calculate distance to goal using Euclidean Heuristic
         '''
-        return np.linalg.norm(self.goal - self.snake.get_position())
+        return np.linalg.norm(self.goal - self.snake.get_base_observation()[0])
     
     def reset(self, seed = None):
         '''
@@ -112,12 +115,12 @@ class TestEnv(gym.Env):
         if self.rendered_img is None:
             self.rendered_img = plt.imshow(np.zeros((100, 100, 4)))
         snake_id, client_id = self.snake.get_ids()
-        view_matrix = p.computeViewMatrixFromYawPitchRoll(cameraTargetPosition = self.snake.get_position(), distance = 6, yaw = 0, pitch = -10, roll = 0, upAxisIndex = 2, physicsClientId = client_id)
+        view_matrix = p.computeViewMatrixFromYawPitchRoll(cameraTargetPosition = self.snake.get_base_observation()[0], distance = 6, yaw = 0, pitch = -10, roll = 0, upAxisIndex = 2, physicsClientId = client_id)
         proj_matrix = p.computeProjectionMatrixFOV(fov = 60, aspect = 1.0, nearVal = 0.1, farVal = 100.0)
         pos, ori = p.getBasePositionAndOrientation(snake_id, client_id)
 
         #rotate the camera to match values
-        rot_matrix = np.array(p.getMatrixFromQuaternion(ori).reshape(3, 3))
+        rot_matrix = np.array(p.getMatrixFromQuaternion(ori)).reshape(3, 3)
         camera_vector = np.matmul(rot_matrix, np.array([1, 0, 0]))
         camera_up = np.matmul(rot_matrix, np.array([0, 0, 1]))
         view_matrix = p.computeViewMatrix(pos, pos + camera_vector, camera_up)
