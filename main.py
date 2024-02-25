@@ -15,6 +15,7 @@ import yaml
 import configparser
 import argparse
 import os
+import pandas as pd
 
 #TODO: Add in the config setup and the config reading processes.
 #setting up logging directory in tensorboard
@@ -78,13 +79,30 @@ def main():
     print("Sampled action: ", action)
     env.reset()
     obs, reward, done, _, info = env.step(action)
+    position_arr = []
+    joint_position_arr = []
 
     for i in range(1000):
         action, states = agent.predict(obs)
         print(f'Action {i} = {action}')
         obs, rewards, terminated, _, info = env.step(action)
+        print(f'Observation {i} = {obs}')
+        position_arr.append(obs[0])
+        joint_position_arr.append(action)
         env.render()
-        
+
+    #generate plot for position array
+    plt.plot(position_arr)
+    plt.title('Position of the snakebot')
+    plt.xlabel('Time step')
+    plt.ylabel('Position')
+    plt.legend(['x', 'y', 'z'])
+    plt.savefig('position_plot.png')
+    plt.show()
+
+    #save positions and joint velocities to csv files
+    joint_positions_df = pd.DataFrame(joint_position_arr)
+    joint_positions_df.to_csv('joint_positions.csv')
 
     #generate plot for the rewards
     matplotlib.use('Agg')

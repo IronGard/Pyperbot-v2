@@ -3,6 +3,15 @@ import pybullet as p
 import numpy as np 
 import math
 import os
+import sys
+import random
+
+#import utils functions for loading goals and maze
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.join(current_dir, '..')
+sys.path.append(parent_dir)
+
+
 
 class Snakebot:
     def __init__(self, client):
@@ -12,8 +21,20 @@ class Snakebot:
         self.client = client
         robot_name = os.path.join(os.getcwd(), 'pyperbot_v2/snakebot_description/urdf/updated_snakebot.urdf.xacro')
         print(robot_name)
-        self.robot = p.loadURDF(robot_name, [0, 0, 0], globalScaling = 2.0, physicsClientId = client)
+        self.robot = p.loadURDF(robot_name, [0.5, 0.5, 0], globalScaling = 2.0, physicsClientId = client)
         self.planeID = p.loadURDF("plane.urdf", [0, 0, 0], physicsClientId = client)
+        #inclusion of the loaded maze
+        self.maze_visual_id = p.createVisualShape(shapeType = p.GEOM_MESH,
+                                                  fileName = "pyperbot_v2/snakebot_description/meshes/maze_10x10.stl",
+                                                  meshScale = [1, 1, 1])
+        self.maze_collision_id = p.createCollisionShape(shapeType = p.GEOM_MESH,
+                                                        fileName = "pyperbot_v2/snakebot_description/meshes/maze_10x10.stl",
+                                                        meshScale = [1, 1, 1],
+                                                        flags = 1)
+        self.mazeID = p.createMultiBody(basePosition = [0, 0, 0],
+                                        baseVisualShapeIndex = self.maze_visual_id,
+                                        baseCollisionShapeIndex = self.maze_collision_id,
+                                        physicsClientId = client)
         #getting prismatic joints and revolute joints from the robot
         self.moving_joints = [p.getJointInfo(self.robot, joint, physicsClientId = client) for joint in range(p.getNumJoints(self.robot, physicsClientId = client)) if p.getJointInfo(self.robot, joint, physicsClientId = client)[2] != p.JOINT_FIXED]
         self.moving_joints_inds = [p.getJointInfo(self.robot, joint, physicsClientId = client)[0] for joint in range(p.getNumJoints(self.robot, physicsClientId = client)) if p.getJointInfo(self.robot, joint, physicsClientId = client)[2] != p.JOINT_FIXED]
@@ -55,6 +76,39 @@ class Snakebot:
         #                             physicsClientId = self.client)
         # print(len([0, 1, 2, 5, 6, 8, 9, 10, 13, 14, 16, 17, 18, 21, 22, 24, 25, 26, 29, 30]))
         # print(len(actions))
+    
+    def gen_goals(self, num_goals):
+        '''
+        Function to generate number of goals to be added to the snakebot environment
+        '''
+        goals = []
+        duck_scale = [1, 1, 1]
+        shift = [0, -0.02, 0]
+        visualShapeId = p.createVisualShape(shapeType=p.GEOM_MESH,
+                                            fileName="duck.obj",
+                                            rgbaColor=[1, 1, 1, 1],
+                                            specularColor=[0.4, 0.4, 0],
+                                            visualFramePosition=shift,
+                                            meshScale=duck_scale)
+
+        collisionShapeId = p.createCollisionShape(shapeType=p.GEOM_MESH,
+                                                fileName="duck_vhacd.obj",
+                                                collisionFramePosition=shift,
+                                                meshScale=duck_scale)
+
+        #Generate random coordinates for the goal
+        x, y = [], []
+        for i in range(num_goals):
+            x.append(random.randrange(-9, 9, 2))
+            y.append(random.randrange(1, 19, 2))
+            p.createMultiBody(baseMass=1,
+                            baseInertialFramePosition=[0, 0, 0],
+                            baseCollisionShapeIndex=collisionShapeId,
+                            baseVisualShapeIndex=visualShapeId,
+                            baseOrientation=[0, 45, 45, 0],
+                            basePosition=[x[i], y[i], 0])
+            goals.append([x[i], y[i]])
+        return goals
     
     def get_joint_observation(self):
         #get num moving joints and moving joint indices

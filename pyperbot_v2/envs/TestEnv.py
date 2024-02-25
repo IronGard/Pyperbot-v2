@@ -6,6 +6,7 @@ import pybullet_data
 # from ..resources.goal import Goal
 # from ..resources.terrain import terrain
 from ..snakebot_description.snakebot_class_implementation import Snakebot
+from ..resources.goal import Goal
 import matplotlib.pyplot as plt
 
 #framework inspired by code provided by stable baselines.
@@ -81,7 +82,7 @@ class TestEnv(gym.Env):
         '''
         Function to calculate distance to goal using Euclidean Heuristic
         '''
-        return np.linalg.norm(self.goal - self.snake.get_base_observation()[0])
+        return np.linalg.norm(self.goal.get_goals()[0]) - np.linalg.norm(self.snake.get_base_observation()[0])
     
     def reset(self, seed = None):
         '''
@@ -90,7 +91,7 @@ class TestEnv(gym.Env):
         p.resetSimulation(self.client) #reset the simulation
         p.setGravity(0, 0, -9.81)
         self.snake = Snakebot(self.client)
-        self.goal = np.random.rand(3) * 200 #insert goal in random position
+        self.goal = Goal(self.client, 3) #insert goal in random position
         self.done = False
         self.prev_dist_to_goal = self.get_dist_to_goal()
         #add visual element of goal (TODO)
