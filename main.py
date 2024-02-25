@@ -4,8 +4,11 @@ import stable_baselines3 as sb3
 from stable_baselines3 import PPO, A2C, DDPG, dqn
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.env_checker import check_env
+from stable_baselines3.common.env_util import make_vec_env
 import time
 import matplotlib
+import matplotlib.pyplot as plt
+import tensorboard
 import pyperbot_v2
 import yaml
 
@@ -14,6 +17,8 @@ import argparse
 import os
 
 #TODO: Add in the config setup and the config reading processes.
+#setting up logging directory in tensorboard
+log_dir = "pyperbot_v2/tensorboard_logs/ppo/"
 
 #=========================Argument Parser=========================
 parser = argparse.ArgumentParser(description = 'Run python file with or without arguments')
@@ -55,29 +60,47 @@ def main():
     #here, we use the SB3 based implementation of the PPO algorithm - though a custom one could be defined as well.
     env = gym.make("SnakebotEnv-v0")
     #convert env to vector environment
-    agent = PPO("MlpPolicy", "SnakebotEnv-v0", verbose = 1)
+    agent = PPO("MlpPolicy", "SnakebotEnv-v0", verbose = 1, tensorboard_log = log_dir)
     print("Environment found. Training agent...")
     agent.learn(total_timesteps = int(25000), progress_bar = True)
     agent.save("PPO_snakebot")
     #reset the environment and render
-    mean_reward, std_reward = evaluate_policy(agent, agent.get_env(), n_eval_episodes = 10)
-    print(f'Mean reward = {mean_reward}')
-    print(f'Standard reward = {std_reward}')
+    # mean_reward, std_reward = evaluate_policy(agent, agent.get_env(), n_eval_episodes = 10, )
+    # print(f'Mean reward = {mean_reward}')
+    # print(f'Standard reward = {std_reward}')
 
     #establishing the vectorised environment. 
-    vec_env = agent.get_env()
+    vec_env = make_vec_env("SnakebotEnv-v0", n_envs = 4)
     obs = vec_env.reset() #call reset at the beginning of an episode
-    check_env(vec_env) #check if the environment is valid
 
     # #sample action and observation
-    action = vec_env.action_space.sample()
+    action = env.action_space.sample()
     print("Sampled action: ", action)
-    obs, reward, done, info = vec_env.step(action)
+    env.reset()
+    obs, reward, done, _, info = env.step(action)
 
     for i in range(1000):
         action, states = agent.predict(obs)
-        obs, rewards, terminated, info = vec_env.step(action)
-        vec_env.render('human')
+        print(f'Action {i} = {action}')
+        obs, rewards, terminated, _, info = env.step(action)
+        env.render()
+        
+
+    #generate plot for the rewards
+    matplotlib.use('Agg')
+    plt.plot(rewards)
+    plt.savefig('rewards_plot.png')
+    plt.show()
+
+    #generate plot for loss against episodes
+    plt.plot(agent.ep_info_buffer)
+    plt.savefig('loss_plot.png')
+    plt.show()
+
+    # evaluate model
+    mean_reward, std_reward = evaluate_policy(agent, agent.get_env(), n_eval_episodes = 10)
+    print(f'Mean reward = {mean_reward}')
+    print(f'Standard reward = {std_reward}')
     # #save results for plotting and analysis.
 
 if __name__ == "__main__":
