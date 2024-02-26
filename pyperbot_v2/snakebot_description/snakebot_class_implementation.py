@@ -68,6 +68,7 @@ class Snakebot:
                                     targetPosition = actions[i], 
                                     force = 30, 
                                     physicsClientId = self.client)
+        base_position, base_orientation = p.getBasePositionAndOrientation(self.robot, self.client)
         # p.setJointMotorControlArray(self.robot,
         #                             [0, 1, 2, 5, 6, 8, 9, 10, 13, 14, 16, 17, 18, 21, 22, 24, 25, 26, 29, 30],
         #                             p.POSITION_CONTROL,

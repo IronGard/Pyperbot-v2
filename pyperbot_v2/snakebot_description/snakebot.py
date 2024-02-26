@@ -269,6 +269,9 @@ counter = 0
 starting_sample = 150
 
 def rearrange_array(old_array):
+    '''
+    Methods to rearrange info from the csv file into 4x5 array
+    '''
     joint_values[0] = old_array[0:5]
     joint_values[1] = old_array[5:10]
     joint_values[2] = old_array[10:15]

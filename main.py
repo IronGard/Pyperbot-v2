@@ -11,21 +11,36 @@ import matplotlib.pyplot as plt
 import tensorboard
 import pyperbot_v2
 import yaml
+import pybullet as p
 
 import configparser
 import argparse
 import os
 import pandas as pd
 
+#making relative imports from server_code.py
+from pyperbot_v2.utils.server_code import setup_server, setup_connection, data_transfer, rearrange_array
+                
+
+#=========================Constants=========================
+host = '0.0.0.0'
+port = 6969
+sample_step = 20
+counter = 0
+starting_sample = 150
+#===========================================================
+
 #TODO: Add in the config setup and the config reading processes.
 #setting up logging directory in tensorboard
 log_dir = "pyperbot_v2/tensorboard_logs/ppo/"
+results_dir = "pyperbot_v2/results/"
 
 #=========================Argument Parser=========================
 parser = argparse.ArgumentParser(description = 'Run python file with or without arguments')
 
 #add arguments
 parser.add_argument('-f', '--filename', help = "Name of python file to run")
+parser.add_argument('-rl', '--rl_algo', help = "Name of reinforcmeent learning algorithm to be run", default = "PPO")
 parser.add_argument('-a', '--algo', help = "Name of algorithm to be run")
 parser.add_argument('-en', '--env', help = "Simulation environment to be used")
 parser.add_argument('-t', '--terrain', help = "Terrain to be used for the simulation")
@@ -89,6 +104,7 @@ def main():
         print(f'Observation {i} = {obs}')
         position_arr.append(obs[0])
         joint_position_arr.append(action)
+        #TODO - setup live data transfer instead of reading results from CSV
         env.render()
 
     #generate plot for position array
@@ -102,7 +118,8 @@ def main():
 
     #save positions and joint velocities to csv files
     joint_positions_df = pd.DataFrame(joint_position_arr)
-    joint_positions_df.to_csv('joint_positions.csv')
+    joint_positions_df.to_csv('joint_positions.csv') 
+    #figure out how to save the position array to the correct address
 
     #generate plot for the rewards
     matplotlib.use('Agg')
@@ -122,4 +139,7 @@ def main():
     # #save results for plotting and analysis.
 
 if __name__ == "__main__":
+    s = setup_server(host, port)
+
+    # conn = setup_connection(s) #TODO - setup timeout condition for connection timeout
     main()
