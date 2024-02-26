@@ -1,5 +1,6 @@
 import pybullet as p
 import pybullet_data
+import numpy as np
 import random
 
 class Loader():
@@ -18,6 +19,8 @@ class Loader():
             load the robot based on the given directory.
         goal(num_goals)
             load <num_goals> number of goals.
+        camera()
+            attach 100x100 pixel camera at the head of the robot.
     '''
     def __init__(self, video_dir):
         '''
@@ -68,14 +71,14 @@ class Loader():
             robot_dir: str
                 the directory of the xacro file.
         Return:
-            robot_id: int
+            self._robot_id: int
                 the unique id of the loaded robot.
         '''
-        robot_id = p.loadURDF(robot_dir, 
+        self._robot_id = p.loadURDF(robot_dir, 
                            physicsClientId = self._physicsClient, 
                            basePosition = [0.5, 0.5, 0], 
                            globalScaling = 2)
-        return robot_id
+        return self._robot_id
 
     def goal(self, num_goals):
         '''
@@ -110,3 +113,31 @@ class Loader():
                             baseVisualShapeIndex=visualShapeId,
                             baseOrientation=[0, 45, 45, 0],
                             basePosition=[x[i], y[i], 0])
+            
+    def camera(self):
+        '''
+        Attach 100x100 pixel camera at the head of the robot.
+
+        Return:
+            img: list
+                the image data.
+        '''
+        fov, aspect, nearplane, farplane = 100, 1.0, 0.01, 100
+        projection_matrix = p.computeProjectionMatrixFOV(fov, aspect, nearplane, farplane)
+
+        # World position (xyz) and orientation (xyzw) of link 0 (head) 
+        pos, ori, _, _, _, _ = p.getLinkState(self._robot_id, 0, computeForwardKinematics=True)
+        # generate a list of 9 floats from quaternion (xyzw)
+        rot_mat = p.getMatrixFromQuaternion(ori)
+        # reshape the list of 9 floats into 3x3 transformation matrix
+        rot_mat = np.array(rot_mat).reshape(3, 3)
+        # camera target position and up vector (xyz)
+        cam_target = (-1, 0, 0)
+        up_vector = (0, 0, 1)
+        # transfrom target position and up vector 
+        camera_vector = rot_mat.dot(cam_target)
+        up_vector = rot_mat.dot(up_vector)
+        # generate the view matrix
+        view_matrix = p.computeViewMatrix(pos, pos + 0.1 * camera_vector, up_vector)
+        img = p.getCameraImage(100, 100, view_matrix, projection_matrix)
+        return img
