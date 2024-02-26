@@ -8,4 +8,5 @@ num_goals = 1
 seed = 0
 
 [USER]
+rl_algo = PPO
 

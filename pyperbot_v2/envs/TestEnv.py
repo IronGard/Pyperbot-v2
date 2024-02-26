@@ -51,10 +51,10 @@ class TestEnv(gym.Env):
         #TODO: set condition for done
         '''
         self.snake.apply_action(action)
-        p.stepSimulation() 
+        p.stepSimulation() #step the pybullet simulation after a step is taken to update position after action is applied.
         snake_joint_obs = self.snake.get_joint_observation() #here we primarily want the joint positions, not velocities
-        base_pos, base_ori = self.snake.get_base_observation()
-        dist_to_goal = self.get_dist_to_goal()
+        base_pos, base_ori = self.snake.get_base_observation() #obtain a new base observation based on movement of the snake robot
+        dist_to_goal = self.get_dist_to_goal() #obtain distance of the snake remaining from the goal
         #set the reward based on improvement in distance to goal
         reward = max(self.prev_dist_to_goal - dist_to_goal, 0)
         #if the snake runs off boundaries of the grid, self.done == True
