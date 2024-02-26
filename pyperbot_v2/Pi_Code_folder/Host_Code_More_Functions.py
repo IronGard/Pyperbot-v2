@@ -22,6 +22,11 @@ class server():
         self.transmitting_command = "MOVE"
         self.transmitting_data = ""
 
+        #Attributes for reading csv file (to be removed later)
+        self.csv_file_path = csv_file_path
+        self.dummy_transmitting_data = self.read_file()
+        self.n = 0
+
     #Function for reading joint angles from the csv file
     def read_file(self):
         with open(self.csv_file_path, "r") as file:
@@ -51,8 +56,11 @@ class server():
         return transmitting_data
 
     #Function for returning the n^th sample from transmitting_data
-    def get_transmitting_data(self, n):
-        return self.transmitting_data[n]
+    def feed_transmitting_data(self, fed_data):
+        self.transmitting_data = fed_data
+
+    def get_transmitting_data(self):
+        return self.transmitting_data
 
     #Function for setting up the server. Returns a socket object, which is used to form a connection between host and client.
     def setup_server(self):
@@ -98,8 +106,9 @@ class server():
         #This is when the snake requests the next set of joint angles. Server will compute next set of angles and send them back to snake.
         if(self.received_command == "REQ_JOINT_POS"):
             print("Returning new joint positions.")
+            print("Sensor data is: " + self.received_data)
             self.transmitting_command = "MOVE_JOINT"
-            self.transmitting_data = "[0,1,2,3,4]" #dummy value, to be replaced with actual data later
+            self.n = self.n + 1
 
         #This is an ACK from the robot that it has moved to the commanded joint values
         if(self.received_command == "JOINT_MOVED"):
@@ -112,6 +121,7 @@ class server():
         #Concats the COMMAND, DATA, and MESSAGE_STATUS, encodes it, and transmits it to the snake
         transmitting_message = self.transmitting_command + " " + self.transmitting_data + " " + "UNREAD"
         self.conn.sendall(str.encode(transmitting_message))
+        print(transmitting_message)
 
     #Function for debugging the snake (test if the joints work) by setting all joints to their initial positions
     def debug(self):
@@ -125,7 +135,7 @@ my_server = server("dataset/joint_positions.csv")
 
 #Initial debug
 my_server.debug()
-
+input()
 #Loops through the FETCH-DECODE-EXECUTE cycle of receiving data from the snake, decoding it, and executing (e.g., running sims to generate next set of joints, then transmitting them back to the snake)
 while True:
     input()
@@ -135,6 +145,3 @@ while True:
     #EXECUTE: If the command hasn't been executed, we execute it.
     if(my_server.get_message_status() == "UNREAD"):
         my_server.execute_message()
-
-
-

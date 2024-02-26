@@ -156,7 +156,6 @@
             <origin rpy = "0 0 0" xyz = "0.055 0 0"/>
         </joint>
     </xacro:macro>
-    
     <!-- Initiate modules -->
     <xacro:module number = "1" color = "white"/>
     <xacro:module number = "2" color = "black"/>
