@@ -50,7 +50,7 @@ class TestEnv(gym.Env):
         is calculated using get_dist_to_goal function. 
         #TODO: set condition for done
         '''
-        self.snake.apply_action(action)
+        self.snake.apply_action(action) # apply action to the robot
         p.stepSimulation() #step the pybullet simulation after a step is taken to update position after action is applied.
         snake_joint_obs = self.snake.get_joint_observation() #here we primarily want the joint positions, not velocities
         base_pos, base_ori = self.snake.get_base_observation() #obtain a new base observation based on movement of the snake robot
