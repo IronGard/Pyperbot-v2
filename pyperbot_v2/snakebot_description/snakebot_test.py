@@ -23,10 +23,9 @@ pyb_setup.plane()
 #p.loadURDF("pyperbot_v2/snakebot_description/urdf/full_snakebot_no_macro.urdf.xacro")
 robot = pyb_setup.robot("pyperbot_v2/snakebot_description/urdf/updated_full_snakebot_no_macro.urdf.xacro")
 #pyb_setup.goal(num_goals)
-
+print(p.getNumJoints(robot))
 fov, aspect, nearplane, farplane = 100, 1.0, 0.01, 100
 projection_matrix = p.computeProjectionMatrixFOV(fov, aspect, nearplane, farplane)
-
 
 def camera():
     # World position (xyz) and orientation (xyzw) of link 0 (head) 
@@ -47,21 +46,20 @@ def camera():
     return img
 
 def get_keyboard_input():
-        # arrow up: 65297, arrow down: 65298, arrow right: 65296, arrow left: 65295
-        input_dict = {65297:  1,
-                      65298: -1,
-                      65296:  1j,
-                      65295: -1j}
-        pressed_keys = []
-        direction = 0
-        events = p.getKeyboardEvents()
-        key_codes = events.keys()
-        for key in key_codes:
-            print(key)
-            if key in input_dict:
-                pressed_keys.append(key)
-                direction += input_dict[key]
-        return pressed_keys, direction
+    # Map direction to steering. Up: 65297, Down: 65298, Right: 65296, Left: 65295
+    input_dict = {65297: 1j, 65298: -1j, 65296:  1, 65295: -1}
+    steering_dict = {1: 0.8, -1: -0.8, 1j: 0, -1j: 0, 1+1j: 0.4, -1+1j : -0.4}
+
+    pressed_keys, direction = [], 0
+    key_codes = p.getKeyboardEvents().keys()
+    for key in key_codes:
+        if key in input_dict:
+            pressed_keys.append(key)
+            direction += input_dict[key]
+
+    steering = steering_dict.get(direction, 0)
+
+    return steering
 
 def joint_classification(robot):
     revolute_joints = []
@@ -83,32 +81,75 @@ def joint_classification(robot):
     print("fixed joints: ", fixed_joints)
     print("other joints", other_joints)
 
-joint_classification(robot)
+def lateral_undulation(waveFront):
+    # Physics setting
+    anisotropicFriction = [0.005, 0.005, 1]
+    lateralFriction = 2
+    for i in range(-1, p.getNumJoints(robot)):
+        p.changeDynamics(robot, i, lateralFriction = lateralFriction,anisotropicFriction=anisotropicFriction)
 
-anisotropicFriction = [1, 0.01, 0.01]
+    waveLength = 4.2 #Wave length of the snake
+    wavePeriod = 1 #Wave period of the snake
+    dt = 1./240. #Period in pybullet
+    waveAmplitude = 1 #Amplitude of the snake
+    segmentLength = 0.4 #Length of the snake
+
+    scaleStart = 1.0
+    if (waveFront < segmentLength * 4.0):
+        scaleStart = waveFront / (segmentLength * 4.0)
+
+    joint_list = [2, 6, 10, 14, 18, 22, 26, 30]
+    steering = get_keyboard_input()
+
+    for joint in range(p.getNumJoints(robot)):
+        segment = joint
+        phase = (waveFront - (segment + 1) * segmentLength) / waveLength
+        phase -= math.floor(phase)
+        phase *= math.pi * 2.0
+
+        #map phase to curvature
+        targetPos = math.sin(phase)* scaleStart* waveAmplitude + steering
+        if joint not in joint_list:
+            targetPos = 0
+        p.setJointMotorControl2(robot, joint, p.POSITION_CONTROL, targetPosition=targetPos, force=30)
+
+    waveFront += dt/wavePeriod*waveLength
+    return waveFront
+
+waveFront = 0
+while True:
+    waveFront = lateral_undulation(waveFront)
+    p.stepSimulation()
+    time.sleep(1./240.)
+
+'''
+# Physics setting
+anisotropicFriction = [0.005, 0.005, 1]
 lateralFriction = 2
-p.changeDynamics(robot, -1, lateralFriction = lateralFriction, anisotropicFriction=anisotropicFriction)
-for i in range(p.getNumJoints(robot)):
+for i in range(-1, p.getNumJoints(robot)):
     p.changeDynamics(robot, i, lateralFriction = lateralFriction,anisotropicFriction=anisotropicFriction)
 
-dt = 1./240. #Period in pybullet
-waveLength = 2 #Wave length of the snake
+# Parameters
+waveLength = 4.2 #Wave length of the snake
 wavePeriod = 1 #Wave period of the snake
-waveAmplitude = 0.5 #Amplitude of the snake
+dt = 1./240. #Period in pybullet
+waveAmplitude = 1 #Amplitude of the snake
 waveFront = 0 #Front of the wave of the snake
 steering = 0 #Steering of the snake
 segmentLength = 0.4 #Length of the snake
+scaleStart = 1.0
 
 while True:
-    scaleStart = 1.0
-    steering = 0
-
+    waveFront = lateral_undulation(waveFront)
+    
+    scaleStart = 1
     if (waveFront < segmentLength * 4.0):
         scaleStart = waveFront / (segmentLength * 4.0)
-    segment = 4 - 1
-    joint_list = [6,  14,  22,  30]
-    for joint in range(4):
-        segmentName = p.getJointInfo(robot, joint_list[joint])
+    steering = get_keyboard_input()
+    #segment = 8 - 1
+    joint_list = [2, 6,  10, 14,  18, 22,  26, 30]
+    for joint in range(33):
+        segmentName = p.getJointInfo(robot, joint)
         segment = joint
         phase = (waveFront - (segment + 1) * segmentLength) / waveLength
         phase -= math.floor(phase)
@@ -116,16 +157,24 @@ while True:
 
         #map phase to curvature
         targetPos = math.sin(phase) * scaleStart* waveAmplitude
-        p.setJointMotorControl2(robot,
-                            joint_list[joint],
-                            p.POSITION_CONTROL,
-                            targetPosition=targetPos + steering,
-                            force=30)
+        if joint in joint_list:
+            p.setJointMotorControl2(robot,
+                                joint,
+                                p.POSITION_CONTROL,
+                                targetPosition=targetPos + steering,
+                                force=30)
+        else:
+            p.setJointMotorControl2(robot,
+                                joint,
+                                p.POSITION_CONTROL,
+                                targetPosition=0,
+                                force=30)
         #moving the joint by squashing sine wave
 
     waveFront += dt/wavePeriod*waveLength
+    
     p.stepSimulation()
 
-    time.sleep(dt)
-    
+    time.sleep(1./240.)
+'''
 

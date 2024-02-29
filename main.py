@@ -41,11 +41,11 @@ parser = argparse.ArgumentParser(description = 'Run python file with or without 
 #add arguments
 parser.add_argument('-f', '--filename', help = "Name of python file to run")
 parser.add_argument('-rl', '--rl_algo', help = "Name of reinforcmeent learning algorithm to be run", default = "PPO")
-parser.add_argument('-a', '--algo', help = "Name of algorithm to be run")
 parser.add_argument('-en', '--env', help = "Simulation environment to be used")
 parser.add_argument('-t', '--terrain', help = "Terrain to be used for the simulation")
 parser.add_argument('-ep', '--episodes', help = "Number of training iterations")
 parser.add_argument('-n', '--num_goals', help = "Number of goals to be used in the simulation")
+parser.add_argument('-nr', '--num_runs', help = "Number of runs for the timestep")
 parser.add_argument('-s', '--seed', help = "Seed for the simulation")
 parser.add_argument('-n_args', '--num_args', help = "Number of arguments to be used in the simulation")
 parser.add_argument('-eps_clip', '--epsilon_clip', help = "Epsilon clip value for the PPO algorithm")
@@ -78,7 +78,7 @@ def main():
     #convert env to vector environment
     agent = PPO("MlpPolicy", "SnakebotEnv-v0", verbose = 1, tensorboard_log = log_dir)
     print("Environment found. Training agent...")
-    agent.learn(total_timesteps = int(25000), progress_bar = True)
+    agent.learn(total_timesteps = int(25000), progress_bar = True, tb_log_name="first_run")
     agent.save("PPO_snakebot")
     #reset the environment and render
     # mean_reward, std_reward = evaluate_policy(agent, agent.get_env(), n_eval_episodes = 10, )
