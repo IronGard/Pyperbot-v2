@@ -12,11 +12,17 @@ import tensorboard
 import pyperbot_v2
 import yaml
 import pybullet as p
+import warnings
+import tensorflow as tf
+import datetime
 
 import configparser
 import argparse
 import os
 import pandas as pd
+
+#suppress warnings
+warnings.filterwarnings("ignore")
 
 #making relative imports from server_code.py
 from pyperbot_v2.utils.server_code import setup_server, setup_connection, data_transfer, rearrange_array
@@ -41,7 +47,7 @@ parser = argparse.ArgumentParser(description = 'Run python file with or without 
 #add arguments
 parser.add_argument('-f', '--filename', help = "Name of python file to run")
 parser.add_argument('-rl', '--rl_algo', help = "Name of reinforcmeent learning algorithm to be run", default = "PPO")
-parser.add_argument('-a', '--algo', help = "Name of algorithm to be run")
+parser.add_argument('-nr', '--num_runs', help = "Number of runs for the timestep")
 parser.add_argument('-en', '--env', help = "Simulation environment to be used")
 parser.add_argument('-t', '--terrain', help = "Terrain to be used for the simulation")
 parser.add_argument('-ep', '--episodes', help = "Number of training iterations")
@@ -74,11 +80,12 @@ with open('config.yaml', 'w') as configfile:
 #TODO: make sure the main file actually parses the inputs from the argument parser properly and takes it properly.
 def main():
     #here, we use the SB3 based implementation of the PPO algorithm - though a custom one could be defined as well.
-    env = gym.make("SnakebotEnv-v0")
+    #env = gym.make("SnakebotEnv-v0")
+    env = gym.make("ModSnakebotEnv-v0")
     #convert env to vector environment
-    agent = PPO("MlpPolicy", "SnakebotEnv-v0", verbose = 1, tensorboard_log = log_dir)
+    agent = PPO("MlpPolicy", "ModSnakebotEnv-v0", verbose = 1, tensorboard_log = log_dir)
     print("Environment found. Training agent...")
-    agent.learn(total_timesteps = int(25000), progress_bar = True)
+    agent.learn(total_timesteps = int(1e06), progress_bar = True, tb_log_name = "PPO_snakebot")
     agent.save("PPO_snakebot")
     #reset the environment and render
     # mean_reward, std_reward = evaluate_policy(agent, agent.get_env(), n_eval_episodes = 10, )
@@ -86,26 +93,30 @@ def main():
     # print(f'Standard reward = {std_reward}')
 
     #establishing the vectorised environment. 
-    vec_env = make_vec_env("SnakebotEnv-v0", n_envs = 4)
+    vec_env = make_vec_env("ModSnakebotEnv-v0", n_envs = 4)
     obs = vec_env.reset() #call reset at the beginning of an episode
 
     # #sample action and observation
     action = env.action_space.sample()
     print("Sampled action: ", action)
     env.reset()
+    
     obs, reward, done, _, info = env.step(action)
     position_arr = []
     joint_position_arr = []
 
     for i in range(1000):
         action, states = agent.predict(obs)
+        env.render()
         print(f'Action {i} = {action}')
         obs, rewards, terminated, _, info = env.step(action)
         print(f'Observation {i} = {obs}')
         position_arr.append(obs[0])
         joint_position_arr.append(action)
+        time.sleep(1./240.)
+        if done: 
+            break
         #TODO - setup live data transfer instead of reading results from CSV
-        env.render()
 
     #generate plot for position array
     plt.plot(position_arr)

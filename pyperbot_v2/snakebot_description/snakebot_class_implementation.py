@@ -21,8 +21,8 @@ class Snakebot:
         self.client = client
         robot_name = os.path.join(os.getcwd(), 'pyperbot_v2/snakebot_description/urdf/updated_snakebot.urdf.xacro')
         print(robot_name)
-        self.robot = p.loadURDF(robot_name, [0.5, 0.5, 0], globalScaling = 2.0, physicsClientId = client)
-        self.planeID = p.loadURDF("plane.urdf", [0, 0, 0], physicsClientId = client)
+        self.robot = p.loadURDF(robot_name, [0.5, 0.5, 0], globalScaling = 2.0)
+        self.planeID = p.loadURDF("plane.urdf", [0, 0, 0])
         #inclusion of the loaded maze
         self.maze_visual_id = p.createVisualShape(shapeType = p.GEOM_MESH,
                                                   fileName = "pyperbot_v2/snakebot_description/meshes/maze_10x10.stl",
@@ -33,14 +33,13 @@ class Snakebot:
                                                         flags = 1)
         self.mazeID = p.createMultiBody(basePosition = [0, 0, 0],
                                         baseVisualShapeIndex = self.maze_visual_id,
-                                        baseCollisionShapeIndex = self.maze_collision_id,
-                                        physicsClientId = client)
+                                        baseCollisionShapeIndex = self.maze_collision_id)
         #getting prismatic joints and revolute joints from the robot
-        self.moving_joints = [p.getJointInfo(self.robot, joint, physicsClientId = client) for joint in range(p.getNumJoints(self.robot, physicsClientId = client)) if p.getJointInfo(self.robot, joint, physicsClientId = client)[2] != p.JOINT_FIXED]
-        self.moving_joints_inds = [p.getJointInfo(self.robot, joint, physicsClientId = client)[0] for joint in range(p.getNumJoints(self.robot, physicsClientId = client)) if p.getJointInfo(self.robot, joint, physicsClientId = client)[2] != p.JOINT_FIXED]
+        self.moving_joints = [p.getJointInfo(self.robot, joint) for joint in range(p.getNumJoints(self.robot)) if p.getJointInfo(self.robot, joint)[2] != p.JOINT_FIXED]
+        self.moving_joints_inds = [p.getJointInfo(self.robot, joint)[0] for joint in range(p.getNumJoints(self.robot)) if p.getJointInfo(self.robot, joint)[2] != p.JOINT_FIXED]
         print(self.moving_joints_inds)
-        self.prismatic_joints = [joint for joint in range(p.getNumJoints(self.robot, physicsClientId = client)) if p.getJointInfo(self.robot, joint, physicsClientId = client)[2] == p.JOINT_PRISMATIC]
-        self.revolute_joints = [joint for joint in range(p.getNumJoints(self.robot, physicsClientId = client)) if p.getJointInfo(self.robot, joint, physicsClientId = client)[2] == p.JOINT_REVOLUTE]
+        self.prismatic_joints = [joint for joint in range(p.getNumJoints(self.robot)) if p.getJointInfo(self.robot, joint)[2] == p.JOINT_PRISMATIC]
+        self.revolute_joints = [joint for joint in range(p.getNumJoints(self.robot)) if p.getJointInfo(self.robot, joint)[2] == p.JOINT_REVOLUTE]
         self.num_joints = len(self.moving_joints)
     def get_ids(self):
         '''
@@ -67,8 +66,8 @@ class Snakebot:
                                     p.POSITION_CONTROL, 
                                     targetPosition = actions[i], 
                                     force = 30, 
-                                    physicsClientId = self.client)
-        base_position, base_orientation = p.getBasePositionAndOrientation(self.robot, self.client)
+                                    )
+        base_position, base_orientation = p.getBasePositionAndOrientation(self.robot)
         # p.setJointMotorControlArray(self.robot,
         #                             [0, 1, 2, 5, 6, 8, 9, 10, 13, 14, 16, 17, 18, 21, 22, 24, 25, 26, 29, 30],
         #                             p.POSITION_CONTROL,
@@ -113,9 +112,9 @@ class Snakebot:
     
     def get_joint_observation(self):
         #get num moving joints and moving joint indices
-        moving_joints_inds = [joint for joint in range(p.getNumJoints(self.robot, physicsClientId = self.client)) if p.getJointInfo(self.robot, joint, physicsClientId = self.client)[2] != p.JOINT_FIXED]
+        moving_joints_inds = [joint for joint in range(p.getNumJoints(self.robot)) if p.getJointInfo(self.robot, joint)[2] != p.JOINT_FIXED]
         num_moving_joints = len(moving_joints_inds)
-        joint_states = p.getJointStates(self.robot, moving_joints_inds, physicsClientId = self.client)
+        joint_states = p.getJointStates(self.robot, moving_joints_inds)
         joint_positions = [state[0] for state in joint_states]
         joint_velocities = [state[1] for state in joint_states]
         return [joint_positions, joint_velocities]
@@ -125,7 +124,13 @@ class Snakebot:
         Obtain the position and orientation of the robot and use these parameters as an observation of the state of the environment.
         Compute the sum to return an individual float as the observation value.
         '''
-        pos, ang = p.getBasePositionAndOrientation(self.robot, self.client)
+        pos, ang = p.getBasePositionAndOrientation(self.robot)
         ori = p.getEulerFromQuaternion(ang)
         return [pos, ori]
+    
+    def make_sin_wave(self):
+        '''
+        Function to generate sine wave along body of the snake.
+        '''
+        pass
     

@@ -8,3 +8,4 @@ pyperbot_v2/results/videos/*
 pyperbot_v2/ros_components/*
 pyperbot_v2/snakebot_description/__pycache__/*
 pyperbot_v2/results/*
+pyperbot_v2/tensorboard_logs/*
