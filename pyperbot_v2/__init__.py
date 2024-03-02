@@ -6,3 +6,8 @@ register(
     id='SnakebotEnv-v0',
     entry_point='pyperbot_v2.envs:TestEnv'
 )
+
+register(
+    id = 'ModSnakebotEnv-v0',
+    entry_point = 'pyperbot_v2.envs:ModTestEnv'
+)
