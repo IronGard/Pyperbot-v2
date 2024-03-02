@@ -65,6 +65,28 @@ class Loader():
                           baseVisualShapeIndex=maze_visual_id,  
                           baseCollisionShapeIndex=maze_collision_id,
                           physicsClientId = self._physicsClient)
+        
+    def lab(self, lab_dir):
+        '''
+        Load the lab floor plan based on the given directory. 
+
+        Parameter:
+            lab_dir: str
+                the directory of the stl file.
+        '''
+        lab_scale = [0.001, 0.001, 0.001]
+        lab_visual_id = p.createVisualShape(shapeType=p.GEOM_MESH, 
+                                             fileName=lab_dir, 
+                                             meshScale=lab_scale)
+        lab_collision_id = p.createCollisionShape(shapeType=p.GEOM_MESH, 
+                                                   fileName=lab_dir, 
+                                                   meshScale=lab_scale, 
+                                                   flags=1)
+        p.createMultiBody(basePosition=[5, 7, 0], 
+                          baseOrientation=p.getQuaternionFromEuler([np.pi/2, 0, np.pi]),
+                          baseVisualShapeIndex=lab_visual_id,  
+                          baseCollisionShapeIndex=lab_collision_id,
+                          physicsClientId = self._physicsClient)
 
     def robot(self, robot_dir):
         '''
