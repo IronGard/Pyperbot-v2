@@ -41,7 +41,9 @@ class Loader():
         '''
         Load the base plane.
         '''
-        p.loadURDF("plane.urdf", physicsClientId = self._physicsClient, basePosition = [0, 0, 0])
+        p.loadURDF("plane.urdf", 
+                   physicsClientId = self._physicsClient, 
+                   basePosition = [0, 0, 0])
 
     def maze(self, maze_dir):
         '''
@@ -77,7 +79,10 @@ class Loader():
         self._robot_id = p.loadURDF(robot_dir, 
                            physicsClientId = self._physicsClient, 
                            basePosition = [0.5, 0.5, 0], 
-                           globalScaling = 2)
+                           baseOrientation = p.getQuaternionFromEuler([0, 0, -np.pi/2]),
+                           globalScaling = 2,
+                           useFixedBase = 0,
+                           flags = 0|1)
         return self._robot_id
 
     def goal(self, num_goals):
@@ -117,10 +122,6 @@ class Loader():
     def camera(self):
         '''
         Attach 100x100 pixel camera at the head of the robot.
-
-        Return:
-            img: list
-                the image data.
         '''
         fov, aspect, nearplane, farplane = 100, 1.0, 0.01, 100
         projection_matrix = p.computeProjectionMatrixFOV(fov, aspect, nearplane, farplane)
@@ -139,5 +140,5 @@ class Loader():
         up_vector = rot_mat.dot(up_vector)
         # generate the view matrix
         view_matrix = p.computeViewMatrix(pos, pos + 0.1 * camera_vector, up_vector)
-        img = p.getCameraImage(100, 100, view_matrix, projection_matrix)
-        return img
+        image = p.getCameraImage(100, 100, view_matrix, projection_matrix)
+        
