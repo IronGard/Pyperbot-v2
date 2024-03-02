@@ -80,7 +80,7 @@ def joint_classification(robot):
     print("prismatic joints: ", prismatic_joints)
     print("fixed joints: ", fixed_joints)
     print("other joints", other_joints)
-
+joint_classification(robot)
 def lateral_undulation(waveFront):
     # Physics setting
     anisotropicFriction = [0.005, 0.005, 1]
