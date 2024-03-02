@@ -22,6 +22,7 @@ sim_env = args.env
 gait_type = args.gait
 num_goals = args.num_goals
 timesteps = args.timesteps
+camera = args.cam
 
 def main():
     pyb_setup = Loader("--mp4=results/videos/training_video.mp4")
@@ -43,12 +44,14 @@ def main():
 
     joint_pos = []
     for i in range(args.timesteps):
-        pyb_gaits.lateral_undulation()
-        #pyb_gaits.concertina_locomotion()
-        #_, ori = p.getBasePositionAndOrientation(robot_id)
-        #euler = p.getEulerFromQuaternion(ori)
-        #print(euler)
-        #pyb_setup.camera()
+        if gait_type == "concertina_locomotion":
+            pyb_gaits.concertina_locomotion()
+        else:
+            pyb_gaits.lateral_undulation()
+
+        if camera == 1:
+            pyb_setup.camera()
+            
         pos, ori = p.getBasePositionAndOrientation(robot_id)
         euler = p.getEulerFromQuaternion(ori)
         print("Base position: ", pos)
