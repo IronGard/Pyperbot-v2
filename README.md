@@ -2,7 +2,7 @@
 Most snake robots developed for search-and-rescue-tasks have relied on preprogrammed instructions in order for the robot to navigate. This project proposes to use Model-Based reinforcement learning (MBRL) to enable the robot to achieve forward locomotion and be able to navigate complex environments autonomously.
 
 ## Prerequisites
-Please install the latest version of swig and ffmpeg and add it to your PATH. This will be needed for the gymnasium[box2d] command. Please also install Microsoft Visual C++ Build Tools, required for PyBullet, which may be found here: https://learn.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022. Please also instal VCXSRV from the following link: https://github.com/ArcticaProject/vcxsrv/releases/tag/1.17.0.0-3. 
+Please install the latest version of swig and ffmpeg and add it to your PATH. This will be needed for the gymnasium[box2d] command. Please also install Microsoft Visual C++ Build Tools, required for PyBullet, which may be found here: https://learn.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022. Please also install VCXSRV from the following link: https://github.com/ArcticaProject/vcxsrv/releases/tag/1.17.0.0-3. 
 
 ## Supported Python Version
 This project supports python versions from 3.11.0-3.11.7.
@@ -39,11 +39,7 @@ For the main snakebot with reinforcement learning, run:
 ```
 python main.py
 ```
-with or without arguments.
-
-## Arguments for main.py
-The following arguments/flags may be specified for the main.py file:
-
+with or without arguments. See main file for more details regarding arguments that can be passed.
 
 ## Repository Structure
 The repository currently follows the following structure:
@@ -58,6 +54,8 @@ The repository currently follows the following structure:
 |____ urdf -- urdf files
 |____ meshes -- STL meshes for mazes, goals etc.
 |__ slam_code -- code for simultaneous localisation and mapping (SLAM)
+|__ snakebot_description -- contains the primary simulation code and implementation (both manual and RL) approaches to programming and controlling the snake gait.
 |__ tensorboard_logs -- folder to store results from tensorboard from training runs
-|__ utils -- utility functions for storing information.
+|__ utils -- utility functions for running RL models and to supplement other parts of the code.
+|__ wrappers -- Wrappers for the snakebot environment (e.g. custom monitor to get desired results, TimeLimitEnv to restrict number of timesteps)
 ```
