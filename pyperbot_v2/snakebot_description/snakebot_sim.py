@@ -16,7 +16,7 @@ sys.path.append(parent_dir)
 from snakebot_sim_argparse import parse_args
 from utils.structure_loader import Loader
 from utils.gaits import Gaits
-#from utils.snakebot_info import Info
+from utils.snakebot_info import Info
 
 # Arguements
 args = parse_args()
@@ -41,6 +41,8 @@ def main():
     robot_id = pyb_setup.robot("pyperbot_v2/snakebot_description/urdf/full_snakebot_no_macro.urdf.xacro")
     moving_joints = [p.getJointInfo(robot_id, joint) for joint in range(p.getNumJoints(robot_id)) if p.getJointInfo(robot_id, joint)[2] != p.JOINT_FIXED]
     moving_joint_ids = [p.getJointInfo(robot_id, joint)[0] for joint in range(p.getNumJoints(robot_id)) if p.getJointInfo(robot_id, joint)[2] != p.JOINT_FIXED]
+    print(moving_joints)
+    print(moving_joint_ids)
     num_moving_joints = len(moving_joints)
     pyb_gaits = Gaits(robot_id)
     print("Gait type: ", gait_type)
