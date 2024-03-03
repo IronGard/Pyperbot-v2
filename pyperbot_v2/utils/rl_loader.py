@@ -1,3 +1,5 @@
+#modified structure loader to accomodate changes needed for the RL model
+
 import pybullet as p
 import pybullet_data
 import numpy as np
@@ -22,20 +24,15 @@ class Loader():
         camera()
             attach 100x100 pixel camera at the head of the robot.
     '''
-    def __init__(self, video_dir):
+    def __init__(self):
         '''
         Initiate the Pybullet environment and setup save directory for training video.
 
         Parameters:
-            video_dir: str
-                the save directory of the mp4 training video.
+            client:
+                the client object from the Pybullet environment.
         '''
-        self._physicsClient = p.connect(p.GUI, options = video_dir)
-        p.resetSimulation()
-        p.setAdditionalSearchPath(pybullet_data.getDataPath())
-        p.setGravity(0, 0, -9.81)
-        p.setRealTimeSimulation(0)
-        p.setTimeStep(1/240)
+        self._physicsClient = p.connect(p.GUI)
 
     def plane(self):
         '''
@@ -143,43 +140,4 @@ class Loader():
                             basePosition=[x[i], y[i], 0])
             goals.append([x[i], y[i]])
         return goals
-        
-    
-    def get_dist_to_goal(self, goal_pos):
-        '''
-        Compute the distance between the robot and the goal.
-
-        Parameter:
-            goal_pos: list
-                the x, y, z position of the goal.
-        Return:
-            dist: float
-                the distance between the robot and the goal.
-        '''
-        robot_pos, _ = p.getBasePositionAndOrientation(self._robot_id)
-        dist = np.linalg.norm(np.array(robot_pos) - np.array(goal_pos))
-        return dist
-            
-    def camera(self):
-        '''
-        Attach 100x100 pixel camera at the head of the robot.
-        '''
-        fov, aspect, nearplane, farplane = 100, 1.0, 0.01, 100
-        projection_matrix = p.computeProjectionMatrixFOV(fov, aspect, nearplane, farplane)
-
-        # World position (xyz) and orientation (xyzw) of link 0 (head) 
-        pos, ori, _, _, _, _ = p.getLinkState(self._robot_id, 0, computeForwardKinematics=True)
-        # generate a list of 9 floats from quaternion (xyzw)
-        rot_mat = p.getMatrixFromQuaternion(ori)
-        # reshape the list of 9 floats into 3x3 transformation matrix
-        rot_mat = np.array(rot_mat).reshape(3, 3)
-        # camera target position and up vector (xyz)
-        cam_target = (-1, 0, 0)
-        up_vector = (0, 0, 1)
-        # transfrom target position and up vector 
-        camera_vector = rot_mat.dot(cam_target)
-        up_vector = rot_mat.dot(up_vector)
-        # generate the view matrix
-        view_matrix = p.computeViewMatrix(pos, pos + 0.1 * camera_vector, up_vector)
-        image = p.getCameraImage(100, 100, view_matrix, projection_matrix)
         

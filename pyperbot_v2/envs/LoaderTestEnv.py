@@ -1,3 +1,4 @@
+#Modified to include integration with Isaac's code for the loader.
 import gymnasium as gym
 import numpy as np
 import math
@@ -6,7 +7,7 @@ import pybullet_data
 from ..snakebot_description.snakebot_class_test import Snakebot
 from ..resources.goal import Goal
 from ..resources.plane import Plane
-from ..utils.structure_loader import Loader
+from ..utils.rl_loader import Loader
 import matplotlib.pyplot as plt
 from pybullet_utils import bullet_client as bc
 import logging
@@ -14,16 +15,17 @@ import logging
 #generate logger to log results
 logger = logging.getLogger(__name__)
 #TODO: add integration with Isaac code for the Loader to see if it can work
+pyb_setup = Loader()
 
 #setting up the environment
-class ModTestEnv(gym.Env):
+class LoaderTestEnv(gym.Env):
     metadata = {'render_modes': ['human', 'rgb_array'], 'render_fps': 60}
 
     def __init__(self):
         #initialise environment
         #action space should actually be continuous - each joint can move in between from 0 and 1 different values 
         #TODO: need to set action space for prismatic and revolute joints, separately
-        super(ModTestEnv, self).__init__()
+        super(LoaderTestEnv, self).__init__()
         self.action_space = gym.spaces.Box(low = np.array([0, -0.0873, -0.2618, -0.5236, -0.5236, 0, -0.0873, -0.2618, -0.5236, -0.5236, 0, -0.0873, -0.2618, -0.5236, -0.5236, 0, -0.0873, -0.2618, -0.5236, -0.5236]), 
                                            high = np.array([0.02, 0.0873, 0.2618, 0.5236, 0.5236, 0.02, 0.0873, 0.2618, 0.5236, 0.5236, 0.02, 0.0873, 0.2618, 0.5236, 0.5236, 0.02, 0.0873, 0.2618, 0.5236, 0.5236]), 
                                            dtype = np.float32) #20 joints in the snakebot (to be printed + appended to a CSV file)
@@ -83,15 +85,16 @@ class ModTestEnv(gym.Env):
         '''
         Resets the simulation and returns the first observation. We may prescribe this to be the current dist_to_goal
         '''
-        self._client = bc.BulletClient(connection_mode = p.DIRECT) #connect to the pybullet client
+        # self._client = bc.BulletClient(connection_mode = p.DIRECT) #connect to the pybullet client
         # self._client.configureDebugVisualizer(self._client.COV_ENABLE_GUI, 0) #disable the GUI
+        self._client = pyb_setup._physicsClient
         self._client.resetSimulation() #reset the simulation
         self._client.setAdditionalSearchPath(pybullet_data.getDataPath()) #set the search path for the pybullet data
         self._client.setRealTimeSimulation(0) #set the simulation to not run in real time
         self._client.setGravity(0, 0, -9.81)
-        self._snake = Snakebot(self._client) #load the snakebot
-        self._plane = Plane(self._client._client) #load the plane
-        self._goal = Goal(self._client._client, 3) #insert goal in random position
+        self._snake = pyb_setup.robot() #load the snakebot
+        self._plane = pyb_setup.plane() #load the plane
+        self._goal = pyb_setup.goal(3) #insert goal in random position
         self._done = False
         self.prev_dist_to_goal = self.get_dist_to_goal() #set prev dist to goal as current dist
         self._client.stepSimulation()

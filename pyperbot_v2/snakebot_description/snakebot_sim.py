@@ -6,6 +6,8 @@ import pybullet_data
 import sys
 import numpy as np
 import pandas as pd
+import math
+import matplotlib.pyplot as plt
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.join(current_dir, '..')
@@ -32,7 +34,7 @@ def main():
         pyb_setup.lab("pyperbot_v2/snakebot_description/meshes/lab_floor_plan.stl")
     elif sim_env == "maze":
         pyb_setup.maze("pyperbot_v2/snakebot_description/meshes/maze_10x10.stl")
-        pyb_setup.goal(num_goals)
+        goal_positions = pyb_setup.goal(num_goals)
     else:
         print('No selected environment.')
     
@@ -41,22 +43,34 @@ def main():
     moving_joint_ids = [p.getJointInfo(robot_id, joint)[0] for joint in range(p.getNumJoints(robot_id)) if p.getJointInfo(robot_id, joint)[2] != p.JOINT_FIXED]
     num_moving_joints = len(moving_joints)
     pyb_gaits = Gaits(robot_id)
-
+    print("Gait type: ", gait_type)
+    
     joint_pos = []
+    reward_list = []
+    cum_reward = 0
+    cum_reward_list = []
     for i in range(args.timesteps):
+        #initialise gait selection
         if gait_type == "concertina_locomotion":
-            pyb_gaits.concertina_locomotion()
+                pyb_gaits.concertina_locomotion()
         else:
             pyb_gaits.lateral_undulation()
-
         if camera == 1:
             pyb_setup.camera()
             
         pos, ori = p.getBasePositionAndOrientation(robot_id)
         euler = p.getEulerFromQuaternion(ori)
-        print("Base position: ", pos)
+        #if environment = "maze", check if the robot has reached the goal
+        if sim_env == "maze":
+            goal_pos = [goal_positions[0][0], goal_positions[1][0]]
+            reward = np.linalg.norm(np.array(goal_pos) - np.array(pos)[:2])
+            print("Base position: ", pos)
+            #calculate reward based on remaining distance to goal
+            print("Reward: ", -reward)
+            reward_list.append(reward)
+            cum_reward += reward
+            cum_reward_list.append(cum_reward)
         #save joint positions to csv
-        
         for j in range(len(moving_joint_ids)):
             joint_pos.append(p.getJointState(robot_id, moving_joint_ids[j])[0])
         p.stepSimulation()
@@ -65,6 +79,14 @@ def main():
     joint_pos = np.array(joint_pos)
     df = pd.DataFrame(joint_pos)
     df.to_csv('pyperbot_v2/results/csv/joint_positions.csv', index = False)
+
+    #plot timesteps vs reward
+    plt.plot(reward_list)
+    plt.title('Reward vs Timesteps')
+    plt.xlabel('Timesteps')
+    plt.ylabel('Reward')
+    plt.savefig('pyperbot_v2/results/plots/manual_reward_plot.png')
+    plt.show()
 
 if __name__ == "__main__":
     main()
