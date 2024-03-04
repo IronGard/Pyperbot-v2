@@ -15,10 +15,14 @@ class Loader():
             load the base plane.
         maze(maze_dir)
             load the 20x20 maze based on the given directory.
-        robot(robot_dir)
+        lab(lab_dir)
+            load the lab floor plan based on the given directory.
+        robot(robot_dir, basePosition, baseOrientation)
             load the robot based on the given directory.
         goal(num_goals)
             load <num_goals> number of goals.
+        get_dist_to_goal(goal_pos)
+            Compute the distance between the robot and the goal.
         camera()
             attach 100x100 pixel camera at the head of the robot.
     '''
@@ -114,6 +118,10 @@ class Loader():
         Parameter:
             num_goals: int
                 the total number of goals in the maze.
+
+        Return:
+            goals: list
+                coordinates of the goals in [x, y].
         '''
         duck_scale = [1, 1, 1]
         shift = [0, -0.02, 0]
@@ -144,7 +152,6 @@ class Loader():
             goals.append([x[i], y[i]])
         return goals
         
-    
     def get_dist_to_goal(self, goal_pos):
         '''
         Compute the distance between the robot and the goal.

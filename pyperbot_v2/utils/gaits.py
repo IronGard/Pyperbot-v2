@@ -9,7 +9,7 @@ class Gaits():
         self._robot_id = robot_id
         self._wave_front = 0
         for i in range(-1, p.getNumJoints(self._robot_id)):
-            p.changeDynamics(robot_id, i, lateralFriction = self._lateralFriction,anisotropicFriction=self._anisotropicFriction)
+            p.changeDynamics(robot_id, i, lateralFriction = self._lateralFriction, anisotropicFriction=self._anisotropicFriction)
         return
     
     #define friction getters and setters
@@ -25,7 +25,6 @@ class Gaits():
     def set_lateral_friction(self, lateralFriction):
         self._lateralFriction = lateralFriction
 
-    
     def _get_keyboard_input(self):
         # Map direction to steering. Up: 65297, Down: 65298, Right: 65296, Left: 65295
         input_dict = {65297: 1j, 65298: -1j, 65296:  1, 65295: -1}
@@ -86,11 +85,7 @@ class Gaits():
         dt = 1./240. 
         waveAmplitude = 0.25
         segmentLength = 0.4
-        self.set_anisotropic_friction([0.005, 0.005, 1])
-        self.set_lateral_friction(10)
-        for i in range(-1, p.getNumJoints(self._robot_id)):
-            p.changeDynamics(self._robot_id, i, lateralFriction = self._lateralFriction,anisotropicFriction=self._anisotropicFriction) 
-        scaleStart = 1.0
+        
         if (self._wave_front < segmentLength * 4.0):
             scaleStart = self._wave_front / (segmentLength * 4.0)
 

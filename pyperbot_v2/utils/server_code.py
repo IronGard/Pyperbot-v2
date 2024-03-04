@@ -4,7 +4,7 @@ import csv
 
 
 #Class for creating server object
-class server():
+class Server():
     def __init__(self, csv_file_path):
         self.host = '0.0.0.0'
         self.port = 6969
