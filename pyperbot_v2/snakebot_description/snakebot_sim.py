@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import math
 import matplotlib.pyplot as plt
+import csv
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.join(current_dir, '..')
@@ -17,6 +18,7 @@ from snakebot_sim_argparse import parse_args
 from utils.structure_loader import Loader
 from utils.gaits import Gaits
 from utils.snakebot_info import Info
+from utils.server_code import setup_server, setup_connection, data_transfer
 
 # Arguements
 args = parse_args()
@@ -25,6 +27,13 @@ gait_type = args.gait
 num_goals = args.num_goals
 timesteps = args.timesteps
 camera = args.cam
+server = args.server
+
+#declarables
+csv_file_path = 'pyperbot_v2/results/csv/joint_positions.csv'
+transmitting_data = []
+host = '0.0.0.0'
+port = 6969
 
 def main():
     pyb_setup = Loader("--mp4=results/videos/training_video.mp4")
@@ -46,7 +55,7 @@ def main():
     num_moving_joints = len(moving_joints)
     pyb_gaits = Gaits(robot_id)
     print("Gait type: ", gait_type)
-    
+    all_joint_pos = []
     joint_pos = []
     reward_list = []
     cum_reward = 0
@@ -75,12 +84,14 @@ def main():
         #save joint positions to csv
         for j in range(len(moving_joint_ids)):
             joint_pos.append(p.getJointState(robot_id, moving_joint_ids[j])[0])
+        all_joint_pos.append(joint_pos)
+        joint_pos = [] #reset joint_pos array
         p.stepSimulation()
         time.sleep(1/240)
     
-    joint_pos = np.array(joint_pos)
-    df = pd.DataFrame(joint_pos)
-    df.to_csv('pyperbot_v2/results/csv/joint_positions.csv', index = False)
+    joint_pos = np.array(all_joint_pos)
+    df = pd.DataFrame(all_joint_pos)
+    df.to_csv('pyperbot_v2/results/csv/joint_positions.csv', index = False) 
 
     #plot timesteps vs reward
     plt.plot(reward_list)
@@ -91,6 +102,33 @@ def main():
     plt.show()
 
 if __name__ == "__main__":
-    main()
+    if server:
+        s = setup_server(host, port)
+        main()
+        #reading csv file data
+        with open(csv_file_path, 'r') as file:
+            csv_reader = csv.reader(file)
+            counter = 0
+            sample_delay = 10
+            starting_point = 50
+            for row in csv_reader:
+                if(counter >= starting_point):
+                    if(counter%sample_delay == 0):
+                        read_line = row
+                        send_line = ""
+                        for i in range(len(read_line)): #omit the first character bc index
+                            rounded_read_line = str(round(float(read_line[i]), 2))
+                            send_line = send_line + rounded_read_line + ","
+                        rounded_read_line = str(round(float(read_line[i]), 2))
+                        send_line = send_line + rounded_read_line
+                        transmitting_data.append(send_line)
+                        counter = counter + 1
+        #transmitting data
+        while True:
+            print("We have entered this loop.")
+            conn = setup_connection(s)
+            data_transfer(conn, transmitting_data)
+
+    
 
     
