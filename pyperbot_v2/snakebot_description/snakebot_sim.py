@@ -18,7 +18,7 @@ from snakebot_sim_argparse import parse_args
 from utils.structure_loader import Loader
 from utils.gaits import Gaits
 from utils.snakebot_info import Info
-from utils.server_code import setup_server, setup_connection, data_transfer
+from utils.server_code import server
 
 # Arguements
 args = parse_args()
@@ -27,7 +27,7 @@ gait_type = args.gait
 num_goals = args.num_goals
 timesteps = args.timesteps
 camera = args.cam
-server = args.server
+make_server = args.server
 
 #declarables
 csv_file_path = 'pyperbot_v2/results/csv/joint_positions.csv'
@@ -102,33 +102,13 @@ def main():
     plt.show()
 
 if __name__ == "__main__":
-    if server:
-        s = setup_server(host, port)
-        main()
-        #reading csv file data
-        with open(csv_file_path, 'r') as file:
-            csv_reader = csv.reader(file)
-            counter = 0
-            sample_delay = 10
-            starting_point = 50
-            for row in csv_reader:
-                if(counter >= starting_point):
-                    if(counter%sample_delay == 0):
-                        read_line = row
-                        send_line = ""
-                        for i in range(len(read_line)): #omit the first character bc index
-                            rounded_read_line = str(round(float(read_line[i]), 2))
-                            send_line = send_line + rounded_read_line + ","
-                        rounded_read_line = str(round(float(read_line[i]), 2))
-                        send_line = send_line + rounded_read_line
-                        transmitting_data.append(send_line)
-                        counter = counter + 1
-        #transmitting data
-        while True:
-            print("We have entered this loop.")
-            conn = setup_connection(s)
-            data_transfer(conn, transmitting_data)
+    # main()
+    my_server = server(csv_file_path)
+    #my_server.debug()
 
-    
+    #Loops through the Fetch-Decode_execute cycle of receiving data from the snake, decoding it, and executing (e.g., running sims to generate the next set of joints, then transmitting them back to the RPi)
+    while True:
+        my_server.receive_message()
 
-    
+        if(my_server.get_message_status() == "UNREAD"):
+            my_server.execute_message()
