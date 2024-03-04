@@ -29,8 +29,11 @@ timesteps = args.timesteps
 camera = args.cam
 make_server = args.server
 
+abs_path = os.path.abspath(__file__)
+
+
 #declarables
-csv_file_path = 'pyperbot_v2/results/csv/joint_positions.csv'
+csv_file_path= 'C:/Users/hahnl/test_pybullet/Pyperbot-v2/pyperbot_v2/results/csv/joint_positions.csv'
 transmitting_data = []
 host = '0.0.0.0'
 port = 6969
@@ -84,6 +87,7 @@ def main():
         #save joint positions to csv
         for j in range(len(moving_joint_ids)):
             joint_pos.append(p.getJointState(robot_id, moving_joint_ids[j])[0])
+        print(joint_pos)
         all_joint_pos.append(joint_pos)
         joint_pos = [] #reset joint_pos array
         p.stepSimulation()
@@ -102,13 +106,13 @@ def main():
     plt.show()
 
 if __name__ == "__main__":
-    # main()
-    my_server = server(csv_file_path)
-    #my_server.debug()
+    main()
+    # my_server = server(csv_file_path)
+    # my_server.debug()
 
-    #Loops through the Fetch-Decode_execute cycle of receiving data from the snake, decoding it, and executing (e.g., running sims to generate the next set of joints, then transmitting them back to the RPi)
-    while True:
-        my_server.receive_message()
+    # #Loops through the Fetch-Decode_execute cycle of receiving data from the snake, decoding it, and executing (e.g., running sims to generate the next set of joints, then transmitting them back to the RPi)
+    # while True:
+    #     my_server.receive_message()
 
-        if(my_server.get_message_status() == "UNREAD"):
-            my_server.execute_message()
+    #     if(my_server.get_message_status() == "UNREAD"):
+    #         my_server.execute_message()

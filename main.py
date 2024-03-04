@@ -24,7 +24,6 @@ from stable_baselines3.common.monitor import Monitor
 warnings.filterwarnings("ignore")
 
 #making relative imports from server_code.py
-from pyperbot_v2.utils.server_code import setup_server, setup_connection, data_transfer, rearrange_array
 from pyperbot_v2.wrappers.TimeLimitEnv import TimeLimitEnv
 
 #=========================Constants=========================
@@ -127,7 +126,6 @@ def main(env, rl_algo, timesteps, num_runs, load_agent, terrain, episodes, num_g
     # #save results for plotting and analysis.
 
 if __name__ == "__main__":
-    s = setup_server(host, port)
     parser = argparse.ArgumentParser(description = 'Run python file with or without arguments')
     #add arguments
     parser.add_argument('-e', '--env', help = "Name of the environment to be used for the simulation", default = "ModSnakebotEnv-v0")

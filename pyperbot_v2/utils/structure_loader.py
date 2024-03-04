@@ -88,7 +88,7 @@ class Loader():
                           baseCollisionShapeIndex=lab_collision_id,
                           physicsClientId = self._physicsClient)
 
-    def robot(self, robot_dir, basePosition = [0.5, 0.5, 0], baseOrientation = [0, 0, -np.pi/2]):
+    def robot(self, robot_dir, basePosition = [0.5, 0.5, 0], baseOrientation = [0, 0, 0, -np.pi/2]):
         '''
         Load the robot based on the given directory.
         Parameter:

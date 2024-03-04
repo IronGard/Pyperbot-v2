@@ -1,5 +1,6 @@
 import pybullet as p
 
+
 class Info():
     def joint_classification(robot):
         revolute_joints, prismatic_joints, fixed_joints, other_joints= [], [], [], []

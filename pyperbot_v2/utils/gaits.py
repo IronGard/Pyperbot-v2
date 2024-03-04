@@ -4,7 +4,7 @@ import math
 class Gaits():
     def __init__(self, robot_id):
         # Physics setting
-        self._anisotropicFriction = [0.005, 0.005, 1]
+        self._anisotropicFriction = [0.01, 0.01, 1]
         self._lateralFriction = 2
         self._robot_id = robot_id
         self._wave_front = 0
