@@ -7,9 +7,13 @@ import pybullet_data
 # from ..resources.terrain import terrain
 from ..snakebot_description.snakebot_class_implementation import Snakebot
 from ..resources.goal import Goal
+from ..resources.plane import Plane
+from ..resources.maze import Maze
 import matplotlib.pyplot as plt
+import logging 
 
 #framework inspired by code provided by stable baselines.
+logger = logging.getLogger(__name__)
 
 #setting up the environment
 class TestEnv(gym.Env):
@@ -17,10 +21,10 @@ class TestEnv(gym.Env):
 
     def __init__(self):
         #initialise environment
-        #action space should actually be continuous - each joint can move in between from 0 and 1 different values 
-        #TODO: need to set action space for prismatic and revolute joints, separately
-        self.action_space = gym.spaces.Box(low = np.array([0, -0.0873, -0.2618, -0.5236, -0.5236, 0, -0.0873, -0.2618, -0.5236, -0.5236, 0, -0.0873, -0.2618, -0.5236, -0.5236, 0, -0.0873, -0.2618, -0.5236, -0.5236]), 
-                                           high = np.array([0.02, 0.0873, 0.2618, 0.5236, 0.5236, 0.02, 0.0873, 0.2618, 0.5236, 0.5236, 0.02, 0.0873, 0.2618, 0.5236, 0.5236, 0.02, 0.0873, 0.2618, 0.5236, 0.5236]), 
+        #normalised action space for each joint - need to adjust the joint limits for the other snake robot
+        self.action_space = gym.spaces.Box(low = -1, 
+                                           high = 1,
+                                           shape = 20, 
                                            dtype = np.float32) #20 joints in the snakebot (to be printed + appended to a CSV file)
         #Observation space - 8 dimensional continuous array - x,y,z position and orientation of base, remaining distance to goal, and velocity of the robot
         #we require a general number of the infomration.
@@ -56,16 +60,9 @@ class TestEnv(gym.Env):
         base_pos, base_ori = self.snake.get_base_observation() #obtain a new base observation based on movement of the snake robot
         dist_to_goal = self.get_dist_to_goal() #obtain distance of the snake remaining from the goal
         #set the reward based on improvement in distance to goal
-        reward = max(self.prev_dist_to_goal - dist_to_goal, 0)
-        #if the snake runs off boundaries of the grid, self.done == True
-        if (all(x < 0 for x in base_pos)) or (all(x>200 for x in base_pos)):
-            self.done = True
-            reward = -50
-        #if the distance to goal is less than threshold, we can set self.done == True
-        elif dist_to_goal < 0.5:
-            self.done = True
-            reward = 50
-        #get the basevelocity of the snake
+        reward = -dist_to_goal
+        #TODO: get the done condition completed properly
+        #get the base velocity of the snake
         base_velocity, _ = p.getBaseVelocity(self.snake.get_ids()[0], self.client)
         #calculate normalised linear velocity of snake
         linear_velocity = np.linalg.norm(base_velocity)
@@ -82,16 +79,19 @@ class TestEnv(gym.Env):
         '''
         Function to calculate distance to goal using Euclidean Heuristic
         '''
-        return np.linalg.norm(self.goal.get_goals()[0]) - np.linalg.norm(self.snake.get_base_observation()[0])
+        return math.hypot(self._goal.get_goals()[0][0] - p.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][0], self._goal.get_goals()[0][1] - p.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][1])
     
-    def reset(self, seed = None):
+    def reset(self, seed = None, env = "maze"):
         '''
         Resets the simulation and returns the first observation. We may prescribe this to be the current dist_to_goal
         '''
         p.resetSimulation(self.client) #reset the simulation
         p.setGravity(0, 0, -9.81)
-        self.snake = Snakebot(self.client)
+        self.snake = Snakebot(self.client, "pyperbot_v2/snakebot_description/urdf/normalised_snakebot_no_macro.urdf.xacro")
         self.goal = Goal(self.client, 3) #insert goal in random position
+        if env == "maze":
+            self.env = Maze(self.client)
+        self.plane = Plane(self.client) #insert plane
         self.done = False
         self.prev_dist_to_goal = self.get_dist_to_goal()
         #add visual element of goal (TODO)

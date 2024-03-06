@@ -1,9 +1,18 @@
 #Define code to generate a maze from the image
+import pybullet as p
 import cv2
 import numpy as np
+import pybullet_data
+
+# Connect to the PyBullet server
+physicsClient = p.connect(p.DIRECT)
+p.setAdditionalSearchPath(pybullet_data.getDataPath())
 
 def convert_image_to_urdf(image_path, output_urdf_path):
     # Read the image
+    '''
+    Function to create custom maze from image by reading contours
+    '''
     maze_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
     # Perform image processing (e.g., thresholding) to extract maze information
@@ -45,6 +54,17 @@ def convert_image_to_urdf(image_path, output_urdf_path):
             urdf_file.write(f'  </joint>\n')
 
         urdf_file.write('</robot>\n')
+
+class Maze:
+    '''
+    Maze Loader for the maze into snakebot test environment.
+    '''
+    def __init__(self, client):
+        self.client = client
+        self.maze = p.loadURDF("pyperbot_v2/resources/maze.urdf",
+                               basePosition=[0, 0, 0],
+                               baseOrientation=[0, 0, 0, 1],
+                               physicsClientId=self.client)
 
 if __name__ == "__main__":
     image_path = "path/to/maze_image.png"

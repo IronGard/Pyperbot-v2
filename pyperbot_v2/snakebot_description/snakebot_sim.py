@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import math
 import matplotlib.pyplot as plt
+import argparse
 import csv
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -53,7 +54,7 @@ def main():
         print('No selected environment.')
     
     # Setup robot
-    robot_id = pyb_setup.robot("pyperbot_v2/snakebot_description/urdf/updated_full_snakebot_no_macro.urdf.xacro")
+    robot_id = pyb_setup.robot("pyperbot_v2/snakebot_description/urdf/updated_full_snakebot.urdf.xacro")
 
     # Obtain robot information
     info = Info(robot_id)

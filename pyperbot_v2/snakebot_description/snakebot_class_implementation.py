@@ -14,14 +14,15 @@ sys.path.append(parent_dir)
 
 
 class Snakebot:
-    def __init__(self, client):
+    def __init__(self, client, snakebot_dir = "pyperbot_v2/snakebot_description/urdf/full_snakebot_no_macro.urdf.xacro"):
         '''
         Constructor for the Snakebot class to define a snakebot object
         '''
         self.client = client
-        robot_name = os.path.join(os.getcwd(), 'pyperbot_v2/snakebot_description/urdf/updated_snakebot.urdf.xacro')
+        robot_name = os.path.join(os.getcwd(), snakebot_dir)
         print(robot_name)
         self.robot = p.loadURDF(robot_name, [0.5, 0.5, 0], globalScaling = 2.0)
+        #TODO: fix these so that they are optional choices
         self.planeID = p.loadURDF("plane.urdf", [0, 0, 0])
         #inclusion of the loaded maze
         self.maze_visual_id = p.createVisualShape(shapeType = p.GEOM_MESH,
@@ -59,6 +60,7 @@ class Snakebot:
         #Each time step is 1.240 of a second
         #we can calcualte the drag and friction of the car as well.
         #debug - using p.setjointMotorControl2 to set joint motor control
+        actions = self.get_action_from_norm(actions)
         moving_joint_list = [0, 1, 2, 5, 6, 8, 9, 10, 13, 14, 16, 17, 18, 21, 22, 24, 25, 26, 29, 30]
         for i in range(len(moving_joint_list)):
             p.setJointMotorControl2(self.robot, 
@@ -127,6 +129,23 @@ class Snakebot:
         pos, ang = p.getBasePositionAndOrientation(self.robot)
         ori = p.getEulerFromQuaternion(ang)
         return [pos, ori]
+    
+    def get_action_from_norm(self, action):
+        '''
+        Function to return action from normalised limits
+            Params:
+                action: list
+                    list of normalised actions
+            Returns:
+                action: list
+                    list of actions within joint limits
+        '''
+        #obtain joint limits
+        joint_upper_limit = [p.getJointInfo(self.robot, joint)[9] for joint in range(p.getNumJoints(self.robot))]
+        joint_lower_limit = [p.getJointInfo(self.robot, joint)[8] for joint in range(p.getNumJoints(self.robot))]
+        #map normalised actions to joint limits
+        action = [action[i]/(2/(joint_upper_limit[i] - joint_lower_limit[i])) for i in range(len(action))]
+        return action
     
     def make_sin_wave(self):
         '''
