@@ -49,6 +49,7 @@ class ModTestEnv(gym.Env):
         self._prev_dist_to_goal = None #parameterising the distance remaining to the goal/final reward
         self.rendered_img = None
         self.rot_matrix = None
+        self.reset()
 
     def step(self, action):
         '''
