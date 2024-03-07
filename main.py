@@ -25,9 +25,8 @@ from stable_baselines3.common.callbacks import BaseCallback, EvalCallback, Check
 warnings.filterwarnings("ignore")
 
 #making relative imports from server_code.py
-from pyperbot_v2.utils.server_code import setup_server, setup_connection, data_transfer, rearrange_array
 from pyperbot_v2.wrappers.TimeLimitEnv import TimeLimitEnv
-
+from pyperbot_v2.wrappers.NormaliseEnv import NormaliseEnv
 #=========================Constants=========================
 host = '0.0.0.0'
 port = 6969
@@ -38,42 +37,39 @@ starting_sample = 150
 
 #TODO: Add in the config setup and the config reading processes.
 #setting up logging directory in tensorboard
-log_dir = "pyperbot_v2/tensorboard_logs/ppo/"
-results_dir = "pyperbot_v2/results/"
+log_dir_PPO = "pyperbot_v2/tensorboard_logs/ppo/"
+log_dir_A2C = "pyperbot_v2/tensorboard_logs/a2c/"
+log_dir_DDPG = "pyperbot_v2/tensorboard_logs/ddpg/"
+log_dir_DQN = "pyperbot_v2/tensorboard_logs/dqn/"
+results_dir = "pyperbot_v2/results/plots/"
 model_dir = "pyperbot_v2/models/"
 #===========================================================
 
 #TODO: make sure the main file actually parses the inputs from the argument parser properly and takes it properly.
-def main(environment, rl_algo, timesteps, num_runs, load_agent, terrain, episodes, num_goals, seed, k_epochs, learning_rate, gamma):
+def main(environment, robot_model, rl_algo, timesteps, num_runs, load_agent, terrain, episodes, num_goals, seed, k_epochs, learning_rate, gamma):
     #here, we use the SB3 based implementation of the PPO algorithm - though a custom one could be defined as well.
+    if torch.cuda.is_available():
+        device = "cuda"
+    else:
+        device = "cpu"
+    print(f"Device found: {device}")
     env = Monitor(gym.make(str(environment)))
-    #create evaluation callback
-    eval_callback = EvalCallback(env, best_model_save_path=os.path.join(log_dir, 'best_models'), 
-                                 save_path = os.path.join(log_dir, 'np_plots'), 
-                                 eval_freq = 1000, deterministic = True,
-                                 render = False)
-    # env = TimeLimitEnv(env, max_episode_steps = 1000) #enforce maximum step limit on agent to find goals
-    #convert env to vector environment
     if rl_algo == "PPO":
-        agent = PPO("MlpPolicy", "ModSnakebotEnv-v0", verbose = 1, tensorboard_log = log_dir)
+        agent = PPO("MlpPolicy", str(environment), verbose = 1, tensorboard_log = log_dir_PPO, device = device)
     elif rl_algo == "A2C":
-        agent = A2C("MlpPolicy", "ModSnakebotEnv-v0", verbose = 1, tensorboard_log = log_dir)
+        agent = A2C("MlpPolicy", str(environment), verbose = 1, tensorboard_log = log_dir_A2C, device = device)
     elif rl_algo == "DDPG":
-        agent = DDPG("MlpPolicy", "ModSnakebotEnv-v0", verbose = 1, tensorboard_log = log_dir)
+        agent = DDPG("MlpPolicy", str(environment), verbose = 1, tensorboard_log = log_dir_DDPG, device = device)
     elif rl_algo == "DQN":
-        agent = DQN("MlpPolicy", "ModSnakebotEnv-v0", verbose = 1, tensorboard_log = log_dir)
+        agent = DQN("MlpPolicy", str(environment), verbose = 1, tensorboard_log = log_dir_DQN, device = device)
     else:
         raise ValueError("Invalid reinforcement learning algorithm specified. Please specify a valid algorithm.")
     print("Environment found. Training agent...")
     agent.learn(total_timesteps = int(timesteps), progress_bar = True, tb_log_name = "PPO_snakebot", callback = eval_callback)
     agent.save(os.path.join(model_dir, "PPO_snakebot"))
-    #reset the environment and render
-    # mean_reward, std_reward = evaluate_policy(agent, agent.get_env(), n_eval_episodes = num_runs, )
-    # print(f'Mean reward = {mean_reward}')
-    # print(f'Standard reward = {std_reward}')
 
     #establishing the vectorised environment. 
-    vec_env = make_vec_env("ModSnakebotEnv-v0", n_envs = 4)
+    vec_env = make_vec_env(str(environment), n_envs = 4)
     obs = vec_env.reset() #call reset at the beginning of an episode
 
     # #sample action and observation
@@ -131,10 +127,10 @@ def main(environment, rl_algo, timesteps, num_runs, load_agent, terrain, episode
     # #save results for plotting and analysis.
 
 if __name__ == "__main__":
-    s = setup_server(host, port)
     parser = argparse.ArgumentParser(description = 'Run python file with or without arguments')
     #add arguments
     parser.add_argument('-e', '--environment', help = "Name of the environment to be used for the simulation", default = "ModSnakebotEnv-v0")
+    parser.add_argument('-rm', '--robot_model', help = "Name of the robot model to be used for simulation", default = "snakebot")
     parser.add_argument('-rl', '--rl_algo', help = "Name of reinforvement learning algorithm to be run", default = "PPO")
     parser.add_argument('-tt', '--timesteps', help = "Number of timesteps for the training process", default = 25000)
     parser.add_argument('-nr', '--num_runs', help = "Number of runs for the timestep", default = 5)
@@ -150,6 +146,7 @@ if __name__ == "__main__":
     print(args)
     # conn = setup_connection(s) #TODO - setup timeout condition for connection timeout
     main(args['environment'],
+         args['robot_model'],
          args['rl_algo'],
          args['timesteps'], 
          args['num_runs'], 

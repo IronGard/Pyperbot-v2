@@ -1,6 +1,7 @@
 import pybullet as p
 import pandas as pd
 
+
 class Info():
     '''
     Class to obtain/ display information related to the snake robot.

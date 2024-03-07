@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import math
 import matplotlib.pyplot as plt
+import argparse
 import csv
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -27,6 +28,9 @@ num_goals = args.num_goals
 timesteps = args.timesteps
 camera = args.cam
 make_server = args.server
+
+abs_path = os.path.abspath(__file__)
+
 
 # Declarables
 csv_file_path = 'pyperbot_v2/results/csv/joint_positions.csv'
