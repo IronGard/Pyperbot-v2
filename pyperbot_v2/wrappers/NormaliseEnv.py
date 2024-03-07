@@ -8,7 +8,7 @@ class NormaliseEnv(gym.Wrapper):
     
     def step(self, action):
         #normalise the action
-        action = (action + 1) / 2
+        action = action * (self.action_space.high - self.action_space.low) / 2.0 + (self.action_space.high + self.action_space.low) / 2.0
         return self.env.step(action)
     
     def reset(self):

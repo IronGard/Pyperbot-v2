@@ -14,14 +14,14 @@ sys.path.append(parent_dir)
 
 
 class Snakebot:
-    def __init__(self, client, snakebot_dir = "pyperbot_v2/snakebot_description/urdf/full_snakebot_no_macro.urdf.xacro"):
+    def __init__(self, client, snakebot_dir = "pyperbot_v2/snakebot_description/urdf/updated_full_snakebot_no_macro.urdf.xacro"):
         '''
         Constructor for the Snakebot class to define a snakebot object
         '''
         self.client = client
         robot_name = os.path.join(os.getcwd(), snakebot_dir)
         print(robot_name)
-        self.robot = p.loadURDF(robot_name, [0.5, 0.5, 0], globalScaling = 2.0)
+        self.robot = p.loadURDF(robot_name, basePosition = [0.5, 0.5, 0], globalScaling = 2.0)
         #TODO: fix these so that they are optional choices
         self.planeID = p.loadURDF("plane.urdf", [0, 0, 0])
         #inclusion of the loaded maze
@@ -69,7 +69,6 @@ class Snakebot:
                                     targetPosition = actions[i], 
                                     force = 30, 
                                     )
-        base_position, base_orientation = p.getBasePositionAndOrientation(self.robot, physicsClientId = self.client._client)
         # p.setJointMotorControlArray(self.robot,
         #                             [0, 1, 2, 5, 6, 8, 9, 10, 13, 14, 16, 17, 18, 21, 22, 24, 25, 26, 29, 30],
         #                             p.POSITION_CONTROL,

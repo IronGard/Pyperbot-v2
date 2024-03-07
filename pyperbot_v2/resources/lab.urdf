@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="lab" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="resources/meshes/lab_floor_plan.stl"/>
+      </geometry>
+    </visual>
+  </link>
+</robot>
