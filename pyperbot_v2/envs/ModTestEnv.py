@@ -3,7 +3,7 @@ import numpy as np
 import math
 import pybullet as p
 import pybullet_data
-from ..snakebot_description.snakebot_class_test import Snakebot
+from ..snakebot_description.snakebot_class_test import TestSnakeBot
 from ..resources.goal import Goal
 from ..resources.plane import Plane
 from ..utils.structure_loader import Loader
@@ -95,7 +95,7 @@ class ModTestEnv(gym.Env):
         self._client.setAdditionalSearchPath(pybullet_data.getDataPath()) #set the search path for the pybullet data
         self._client.setRealTimeSimulation(0) #set the simulation to not run in real time
         self._client.setGravity(0, 0, -9.81)
-        self._snake = Snakebot(self._client) #load the snakebot
+        self._snake = TestSnakeBot(self._client) #load the snakebot
         self._plane = Plane(self._client._client) #load the plane
         self._goal = Goal(self._client._client, 3) #insert goal in random position
         self._done = False
