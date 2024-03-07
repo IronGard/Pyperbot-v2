@@ -82,10 +82,13 @@ class Info():
 
         return moving_joints_ids
     
-    def base_info(self):
+    def base_info(self, euler=True):
         '''
-        Obtain current position and orientation of the base. Note that the orientation has been converted to euler format.
-
+        Obtain current position and orientation of the base. 
+        
+        Parameter:
+            euler: bool
+                option to convert orientation to euler format
         Return:
             pos: list
                 list of position in [x,y,z]
@@ -93,7 +96,8 @@ class Info():
                 list of orientation in [x,y,z]
         '''
         pos, ori = p.getBasePositionAndOrientation(self._robot_id)
-        ori = p.getEulerFromQuaternion(ori)
+        if euler:
+            ori = p.getEulerFromQuaternion(ori)
 
         return pos, ori
 

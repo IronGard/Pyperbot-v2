@@ -85,7 +85,7 @@ class Gaits():
         wave_amplitude = 0.25
         segment_length = 0.4
         scale_start = 1
-
+        
         if (self._wave_front < segment_length * 4.0):
             scale_start = self._wave_front / (segment_length * 4.0)
 

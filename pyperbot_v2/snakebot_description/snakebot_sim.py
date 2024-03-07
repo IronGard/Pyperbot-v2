@@ -70,15 +70,14 @@ def main():
     all_joint_pos = []
     reward_list, cum_reward, cum_reward_list = [], 0, []
     # Start simulation
-    #for i in range(args.timesteps):
-    while True:
+    for i in range(args.timesteps):
+    #while True:
         # Initialise gait movement
-        
         if gait_type == "concertina_locomotion":
             pyb_gaits.concertina_locomotion()
         else:
-            # pyb_gaits.lateral_undulation()
-            pyb_gaits.concertina_locomotion()
+            pyb_gaits.lateral_undulation()
+            #pyb_gaits.concertina_locomotion()
         
         # Attach head camera 
         if camera == 1:
