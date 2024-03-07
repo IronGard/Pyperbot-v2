@@ -6,6 +6,7 @@ import pybullet_data
 # from ..resources.goal import Goal
 # from ..resources.terrain import terrain
 from ..snakebot_description.snakebot_class_implementation import Snakebot
+from ..snakebot_description.snakebot_class_test import TestSnakeBot
 from ..resources.goal import Goal
 from ..resources.plane import Plane
 from ..resources.maze import Maze
@@ -24,6 +25,7 @@ class TestEnv(gym.Env):
     def __init__(self):
         #initialise environment
         #normalised action space for each joint - need to adjust the joint limits for the other snake robot
+        super(TestEnv, self).__init__()
         self.action_space = gym.spaces.Box(low = -1, 
                                            high = 1,
                                            shape = (20,), 
@@ -31,8 +33,8 @@ class TestEnv(gym.Env):
         #Observation space - 8 dimensional continuous array - x,y,z position and orientation of base, remaining distance to goal, and velocity of the robot
         #we require a general number of the infomration.
         self.observation_space = gym.spaces.Box(
-            low = np.array([0, 0, 0, -3.1415, -3.1415, -3.1415, 0, 0]), #first three are base position, next three are base orientation, next is velocity, last is distance to goal
-            high = np.array([200, 200, 200, 3.1415, 3.1415, 3.1415, 100, 20]),
+            low = np.array([0, 0, 0, -3.1415, -3.1415, -3.1415, 0]), #first three are base position, next three are base orientation, next is velocity, last is distance to goal
+            high = np.array([200, 200, 200, 3.1415, 3.1415, 3.1415, 100]),
             dtype = np.float32
         )
         self.random, _ = gym.utils.seeding.np_random() #setting the seed for the RL environment
@@ -40,10 +42,10 @@ class TestEnv(gym.Env):
         #Additional Params for the environment.
         self._snake = None
         self._client = None
+        self._finish_con = 0.5
         self._goal = None
         self._done = None
         self._env = None
-        self._prev_dist_to_goal = None #parameterising the distance remaining to the goal/final reward
         self.rendered_img = None
         self.rot_matrix = None
         self.reset()
@@ -56,19 +58,16 @@ class TestEnv(gym.Env):
         '''
         self._snake.apply_action(action) # apply action to the robot
         self._client.stepSimulation() #step the pybullet simulation after a step is taken to update position after action is applied.
-        snake_joint_obs = self._snake.get_joint_observation() #here we primarily want the joint positions, not velocities
-        base_pos, base_ori = self._snake.get_base_observation() #obtain a new base observation based on movement of the snake robot
-        dist_to_goal = self.get_dist_to_goal() #obtain distance of the snake remaining from the goal
+        observation = self._snake.get_observation()
+        snake_joint_observation = self._snake.get_joint_observation()
+        dist_to_goal = self.get_dist_to_goal()
         #set the reward based on improvement in distance to goal
         reward = -dist_to_goal
-        #TODO: get the done condition completed properly
-        #get the base velocity of the snake
-        base_velocity, _ = p.getBaseVelocity(self.snake.get_ids()[0], self.client)
-        #calculate normalised linear velocity of snake
-        linear_velocity = np.linalg.norm(base_velocity)
-        observation = np.array(list(base_pos) + list(base_ori) + [linear_velocity, dist_to_goal], dtype = np.float32)
-        return (observation, reward, self.done, False, {"obs": snake_joint_obs})
-        #change returned observation to be a numpy array instead of a list.
+        self._done = False
+        if dist_to_goal < self._finish_con:
+            reward = 100
+            self._done = True
+        return (observation, reward, self.done, False, {"obs": snake_joint_observation})
 
     def seed(self, seed = None):
         #Generate seed for the environment
@@ -79,19 +78,19 @@ class TestEnv(gym.Env):
         '''
         Function to calculate distance to goal using Euclidean Heuristic
         '''
-        return math.hypot(self._goal.get_goals()[0][0] - p.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][0], self._goal.get_goals()[0][1] - p.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][1])
+        return math.hypot(self._goal.get_goals()[0][0] - self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][0], self._goal.get_goals()[0][1] - self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][1])
     
     def reset(self, seed = None, env = "maze"):
         '''
         Resets the simulation and returns the first observation. We may prescribe this to be the current dist_to_goal
         '''
-        self._client = bc.BulletClient(connection_mode = p.GUI) #connect to pybullet client
+        self._client = bc.BulletClient(connection_mode = p.DIRECT) #connect to pybullet client
+        #self._client.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
         self._client.setRealTimeSimulation(0) #set real time simulation to 0
         self._client.setAdditionalSearchPath(pybullet_data.getDataPath())
         self._client.resetSimulation() #reset the simulation
         self._client.setGravity(0, 0, -9.81)
-        p.setGravity(0, 0, -9.81)
-        self._snake = Snakebot(self._client, "pyperbot_v2/snakebot_description/urdf/normalised_snakebot_no_macro.urdf.xacro")
+        self._snake = TestSnakeBot(self._client, "pyperbot_v2/snakebot_description/urdf/normalised_snakebot_no_macro.urdf.xacro")
         self._goal = Goal(self._client, 3) #insert goal in random position
         if env == "maze":
             self._env = Maze(self._client)
@@ -100,18 +99,12 @@ class TestEnv(gym.Env):
         self.plane = Plane(self._client) #insert plane
         self.done = False
         self.prev_dist_to_goal = self.get_dist_to_goal()
-        #add visual element of goal (TODO)
-        # Goal(self.client, self.goal)
-        self.joint_ob = self.snake.get_joint_observation()
-        base_pos, ori = self.snake.get_base_observation()[0], self.snake.get_base_observation()[1]
-        print(base_pos)
-        print(ori)
+        self.joint_ob = self._snake.get_joint_observation()
+        base_pos, ori = self._snake.get_base_observation()[0], self._snake.get_base_observation()[1]
         dist_to_goal = self.get_dist_to_goal()
-        base_velocity, _ = p.getBaseVelocity(self.snake.get_ids()[0], self.client)
+        base_velocity, _ = self._client.getBaseVelocity(self._snake.get_ids()[0])
         linear_velocity = np.linalg.norm(base_velocity)
-        print(linear_velocity)
-        print(dist_to_goal)
-        observation = np.array(list(base_pos) + list(ori) + [linear_velocity, dist_to_goal], dtype = np.float32)
+        observation = np.array(list(base_pos) + list(ori) + [linear_velocity], dtype = np.float32)
         #TODO: fix to get the actual observation to ensure that the data returned is actually in the observation space
         return (observation, {"obs": self.joint_ob})
     
@@ -122,20 +115,20 @@ class TestEnv(gym.Env):
         if self.rendered_img is None:
             self.rendered_img = plt.imshow(np.zeros((100, 100, 4)))
         
-        base_pos, _ = self.snake.get_base_observation()
-        if self.client and self.snake:
-            view_matrix = self.client.computeViewMatrixFromYawPitchRoll(cameraTargetPosition = base_pos, distance = 6, yaw = 0, pitch = -10, roll = 0, upAxisIndex = 2)
-            proj_matrix = self.client.computeProjectionMatrixFOV(fov = 60, aspect = 1.0, nearVal = 0.1, farVal = 100.0)
-            (_, _, px, _, _) = self.client.getCameraImage(width = 100, height = 100, viewMatrix = view_matrix, projectionMatrix = proj_matrix, renderer = p.ER_BULLET_HARDWARE_OPENGL)
+        base_pos, _ = self._snake.get_base_observation()
+        if self._client and self._snake:
+            view_matrix = self._client.computeViewMatrixFromYawPitchRoll(cameraTargetPosition = base_pos, distance = 6, yaw = 0, pitch = -10, roll = 0, upAxisIndex = 2)
+            proj_matrix = self._client.computeProjectionMatrixFOV(fov = 60, aspect = 1.0, nearVal = 0.1, farVal = 100.0)
+            (_, _, px, _, _) = self._client.getCameraImage(width = 100, height = 100, viewMatrix = view_matrix, projectionMatrix = proj_matrix, renderer = p.ER_BULLET_HARDWARE_OPENGL)
             self.rendered_img.set_data(px)
             plt.pause(1e-10)
             plt.draw()
             return np.array(px)
         
-        self.client.resetDebugVisualizerCamera(2, 0, -20, base_pos)
+        self._client.resetDebugVisualizerCamera(2, 0, -20, base_pos)
 
     def close(self):
         '''
         Closes simulation by disconnecting from Pybullet client
         '''
-        p.disconnect(self.client)
+        self._client.disconnect()

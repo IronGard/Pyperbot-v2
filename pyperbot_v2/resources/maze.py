@@ -60,11 +60,17 @@ class Maze:
     Maze Loader for the maze into snakebot test environment.
     '''
     def __init__(self, client):
-        self.client = client
-        self.maze = p.loadURDF("pyperbot_v2/resources/maze.urdf",
-                               basePosition=[0, 0, 0],
-                               baseOrientation=[0, 0, 0, 1],
-                               physicsClientId=self.client)
+        self._client = client
+        self.maze = self.gen_maze()
+        
+    def gen_maze(self):
+        '''
+        Function to generate the maze in the environment
+        '''
+        maze = self._client.loadURDF("pyperbot_v2/resources/maze.urdf",
+                          basePosition=[0, 0, 0],
+                          baseOrientation=[0, 0, 0, 1])
+        return maze
 
 if __name__ == "__main__":
     image_path = "path/to/maze_image.png"

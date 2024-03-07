@@ -4,17 +4,16 @@ import pybullet_data
 import random
 import os
 
-#get the human.urdf file from the pybullet_data path
-p.connect(p.DIRECT)
-p.setAdditionalSearchPath(pybullet_data.getDataPath())
 
 class Human:
     def __init__(self, client, basePosition = [0, 0, 0]):
         '''
         Constructor for the Human class to define a human object (used as the "goal" in the environment)
         '''
-        self.client = client
-        p.loadURDF("humanoid.urdf", basePosition, globalScaling = 1.0, physicsClientId = client)
+        self._client = client
+        self._human = self._client.loadURDF("humanoid.urdf", 
+                                            basePosition, 
+                                            globalScaling = 1.0)
         #taken from the human.urdf file in the pybullet_data path
 
 class Duck:
@@ -22,8 +21,10 @@ class Duck:
         '''
         Constructor for the Duck class to define a duck object (used as the "goal" in the environment)
         '''
-        self.client = client
-        p.loadURDF("duck_vhacd.urdf", basePosition, globalScaling = 1.0, physicsClientId = client)
+        self._client = client
+        self._duck = self._client.loadURDF("duck_vhacd.urdf", 
+                                           basePosition, 
+                                           globalScaling = 1.0)
 
 class Goal:
     def __init__(self, client, num_goals):
@@ -37,14 +38,14 @@ class Goal:
         #instantiate the goals
         duck_scale = [1, 1, 1]
         shift = [0, -0.02, 0]
-        visualShapeId = p.createVisualShape(shapeType=p.GEOM_MESH,
+        visualShapeId = self.client.createVisualShape(shapeType=p.GEOM_MESH,
                                             fileName="duck.obj",
                                             rgbaColor=[1, 1, 1, 1],
                                             specularColor=[0.4, 0.4, 0],
                                             visualFramePosition=shift,
                                             meshScale=duck_scale)
 
-        collisionShapeId = p.createCollisionShape(shapeType=p.GEOM_MESH,
+        collisionShapeId = self.client.createCollisionShape(shapeType=p.GEOM_MESH,
                                                 fileName="duck_vhacd.obj",
                                                 collisionFramePosition=shift,
                                                 meshScale=duck_scale)
@@ -54,7 +55,7 @@ class Goal:
         for i in range(num_goals):
             x.append(random.randrange(-9, 9, 2))
             y.append(random.randrange(1, 19, 2))
-            p.createMultiBody(baseMass=1,
+            self.client.createMultiBody(baseMass=1,
                             baseInertialFramePosition=[0, 0, 0],
                             baseCollisionShapeIndex=collisionShapeId,
                             baseVisualShapeIndex=visualShapeId,

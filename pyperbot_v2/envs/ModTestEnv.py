@@ -3,7 +3,7 @@ import numpy as np
 import math
 import pybullet as p
 import pybullet_data
-from ..snakebot_description.snakebot_class_test import Snakebot
+from ..snakebot_description.snakebot_class_test import TestSnakeBot
 from ..resources.goal import Goal
 from ..resources.plane import Plane
 from ..utils.structure_loader import Loader
@@ -24,9 +24,14 @@ class ModTestEnv(gym.Env):
         #action space should actually be continuous - each joint can move in between from 0 and 1 different values 
         #TODO: need to set action space for prismatic and revolute joints, separately
         super(ModTestEnv, self).__init__()
+        '''
+        Non-normalised action space definition provided below:
         self.action_space = gym.spaces.Box(low = np.array([0, -0.0873, -0.2618, -0.5236, -0.5236, 0, -0.0873, -0.2618, -0.5236, -0.5236, 0, -0.0873, -0.2618, -0.5236, -0.5236, 0, -0.0873, -0.2618, -0.5236, -0.5236]), 
                                            high = np.array([0.02, 0.0873, 0.2618, 0.5236, 0.5236, 0.02, 0.0873, 0.2618, 0.5236, 0.5236, 0.02, 0.0873, 0.2618, 0.5236, 0.5236, 0.02, 0.0873, 0.2618, 0.5236, 0.5236]), 
                                            dtype = np.float32) #20 joints in the snakebot (to be printed + appended to a CSV file)
+        '''
+        #Normalised action space:
+        self.action_space = gym.spaces.Box(low = np.array([-1]*20), high = np.array([1]*20), dtype = np.float32)
         #Observation space - 8 dimensional continuous array - x,y,z position and orientation of base, remaining distance to goal, and velocity of the robot
         #we require a general number of the infomration.
         self.observation_space = gym.spaces.Box(
@@ -90,7 +95,7 @@ class ModTestEnv(gym.Env):
         self._client.setAdditionalSearchPath(pybullet_data.getDataPath()) #set the search path for the pybullet data
         self._client.setRealTimeSimulation(0) #set the simulation to not run in real time
         self._client.setGravity(0, 0, -9.81)
-        self._snake = Snakebot(self._client) #load the snakebot
+        self._snake = TestSnakeBot(self._client) #load the snakebot
         self._plane = Plane(self._client._client) #load the plane
         self._goal = Goal(self._client._client, 3) #insert goal in random position
         self._done = False

@@ -44,7 +44,7 @@ class Snakebot:
         self.num_joints = len(self.moving_joints)
     def get_ids(self):
         '''
-        Returns id of the robot and the plane used
+        Returns id of the robot and the plane and client used.
         '''
         return self.robot, self.planeID
     def apply_action(self, actions):
@@ -129,6 +129,17 @@ class Snakebot:
         ori = p.getEulerFromQuaternion(ang)
         return [pos, ori]
     
+    def get_observation(self):
+        '''
+        return full observation in desired format        
+        '''
+        pos, ang = p.getBasePositionAndOrientation(self.robot)
+        ori = p.getEulerFromQuaternion(ang)
+        base_velocity, _ = p.getBaseVelocity(self.robot)
+        linear_velocity = np.linalg.norm(base_velocity) #linear velocity
+        observation = np.array(list(pos) + list(ori) + [linear_velocity], dtype = np.float32)
+        return observation
+    
     def get_action_from_norm(self, action):
         '''
         Function to return action from normalised limits
@@ -146,9 +157,4 @@ class Snakebot:
         action = [action[i]/(2/(joint_upper_limit[i] - joint_lower_limit[i])) for i in range(len(action))]
         return action
     
-    def make_sin_wave(self):
-        '''
-        Function to generate sine wave along body of the snake.
-        '''
-        pass
     
