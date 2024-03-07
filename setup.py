@@ -12,6 +12,7 @@ setup(
                          'rl_zoo3', 
                          'panda_gym',
                          'numpy',
+                         'opencv_python',
                          'matplotlib'],
 )
 

@@ -19,6 +19,7 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.callbacks import BaseCallback, EvalCallback, CheckpointCallback
 
 #suppress warnings
 warnings.filterwarnings("ignore")
@@ -43,11 +44,14 @@ model_dir = "pyperbot_v2/models/"
 #===========================================================
 
 #TODO: make sure the main file actually parses the inputs from the argument parser properly and takes it properly.
-def main(env, rl_algo, timesteps, num_runs, load_agent, terrain, episodes, num_goals, seed, k_epochs, learning_rate, gamma):
+def main(environment, rl_algo, timesteps, num_runs, load_agent, terrain, episodes, num_goals, seed, k_epochs, learning_rate, gamma):
     #here, we use the SB3 based implementation of the PPO algorithm - though a custom one could be defined as well.
-    #env = gym.make("SnakebotEnv-v0")
-    env = Monitor(gym.make(str(env)))
-    # env = Monitor(gym.make("LoaderSnakebotEnv-v0"))
+    env = Monitor(gym.make(str(environment)))
+    #create evaluation callback
+    eval_callback = EvalCallback(env, best_model_save_path=os.path.join(log_dir, 'best_models'), 
+                                 save_path = os.path.join(log_dir, 'np_plots'), 
+                                 eval_freq = 1000, deterministic = True,
+                                 render = False)
     # env = TimeLimitEnv(env, max_episode_steps = 1000) #enforce maximum step limit on agent to find goals
     #convert env to vector environment
     if rl_algo == "PPO":
@@ -61,7 +65,7 @@ def main(env, rl_algo, timesteps, num_runs, load_agent, terrain, episodes, num_g
     else:
         raise ValueError("Invalid reinforcement learning algorithm specified. Please specify a valid algorithm.")
     print("Environment found. Training agent...")
-    agent.learn(total_timesteps = int(timesteps), progress_bar = True, tb_log_name = "PPO_snakebot")
+    agent.learn(total_timesteps = int(timesteps), progress_bar = True, tb_log_name = "PPO_snakebot", callback = eval_callback)
     agent.save(os.path.join(model_dir, "PPO_snakebot"))
     #reset the environment and render
     # mean_reward, std_reward = evaluate_policy(agent, agent.get_env(), n_eval_episodes = num_runs, )
@@ -130,7 +134,7 @@ if __name__ == "__main__":
     s = setup_server(host, port)
     parser = argparse.ArgumentParser(description = 'Run python file with or without arguments')
     #add arguments
-    parser.add_argument('-e', '--env', help = "Name of the environment to be used for the simulation", default = "ModSnakebotEnv-v0")
+    parser.add_argument('-e', '--environment', help = "Name of the environment to be used for the simulation", default = "ModSnakebotEnv-v0")
     parser.add_argument('-rl', '--rl_algo', help = "Name of reinforvement learning algorithm to be run", default = "PPO")
     parser.add_argument('-tt', '--timesteps', help = "Number of timesteps for the training process", default = 25000)
     parser.add_argument('-nr', '--num_runs', help = "Number of runs for the timestep", default = 5)
@@ -145,7 +149,7 @@ if __name__ == "__main__":
     args = vars(parser.parse_args())
     print(args)
     # conn = setup_connection(s) #TODO - setup timeout condition for connection timeout
-    main(args['env'],
+    main(args['environment'],
          args['rl_algo'],
          args['timesteps'], 
          args['num_runs'], 
