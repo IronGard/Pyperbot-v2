@@ -54,11 +54,13 @@ def main():
         print('No selected environment.')
     
     # Setup robot
-    robot_id = pyb_setup.robot("pyperbot_v2/snakebot_description/urdf/updated_full_snakebot_no_macro.urdf.xacro")
+    robot_id = pyb_setup.robot("pyperbot_v2/snakebot_description/urdf/snakebot.urdf.xacro")
 
     # Obtain robot information
     info = Info(robot_id)
     revolute_df, prismatic_df, _, _ = info.joint_info()
+    print(revolute_df)
+    print(prismatic_df)
     moving_joints_ids = info.moving_joint_info()
 
     # Determine robot gait type
@@ -68,13 +70,16 @@ def main():
     all_joint_pos = []
     reward_list, cum_reward, cum_reward_list = [], 0, []
     # Start simulation
-    for i in range(args.timesteps):
+    #for i in range(args.timesteps):
+    while True:
         # Initialise gait movement
+        
         if gait_type == "concertina_locomotion":
             pyb_gaits.concertina_locomotion()
         else:
-            pyb_gaits.lateral_undulation()
-
+            # pyb_gaits.lateral_undulation()
+            pyb_gaits.concertina_locomotion()
+        
         # Attach head camera 
         if camera == 1:
             pyb_setup.camera()

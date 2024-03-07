@@ -4,26 +4,26 @@ import math
 class Gaits():
     def __init__(self, robot_id):
         # Physics setting
-        self._anisotropicFriction = [0.01, 0.01, 1]
-        self._lateralFriction = 2
+        self._anisotropic_friction = [0.005, 0.005, 1]
+        self._lateral_friction = 2
         self._robot_id = robot_id
         self._wave_front = 0
         for i in range(-1, p.getNumJoints(self._robot_id)):
-            p.changeDynamics(robot_id, i, lateralFriction = self._lateralFriction, anisotropicFriction=self._anisotropicFriction)
+            p.changeDynamics(robot_id, i, lateralFriction = self._lateral_friction, anisotropicFriction=self._anisotropic_friction)
         return
     
     #define friction getters and setters
     def get_anisotropic_friction(self):
-        return self._anisotropicFriction
+        return self._anisotropic_friction
     
     def get_lateral_friction(self):
-        return self._lateralFriction
+        return self._lateral_friction
     
     def set_anisotropic_friction(self, anisotropicFriction):
-        self._anisotropicFriction = anisotropicFriction
+        self._anisotropic_friction = anisotropicFriction
     
     def set_lateral_friction(self, lateralFriction):
-        self._lateralFriction = lateralFriction
+        self._lateral_friction = lateralFriction
 
     def _get_keyboard_input(self):
         # Map direction to steering. Up: 65297, Down: 65298, Right: 65296, Left: 65295
@@ -48,63 +48,68 @@ class Gaits():
         return steering
     
     def lateral_undulation(self):
-        waveLength = 4.2 
-        wavePeriod = 1 
+        wave_length = 2.05
+        wave_period = 1 
         dt = 1./240. 
-        waveAmplitude = 1 
-        segmentLength = 0.4
-        scaleStart = 1.0
-        if (self._wave_front < segmentLength * 4.0):
-            scaleStart = self._wave_front / (segmentLength * 4.0)
+        wave_amplitude = 1 
+        segment_length = 0.4
+        scale_start = 1.0
+        if (self._wave_front < segment_length * 4.0):
+            scale_start = self._wave_front / (segment_length * 4.0)
 
-        joint_list=[6, 14, 22, 30]
-        steer_list=[2, 10, 18, 26]
+        joint_list=[7, 16, 25, 34]
+        steer_list=[3, 12, 21, 30]
         steering = self._get_keyboard_input()
 
         for joint in range(p.getNumJoints(self._robot_id)):
             segment = joint
-            phase = (self._wave_front - (segment + 1) * segmentLength) / waveLength
+            phase = (self._wave_front - (segment + 1) * segment_length) / wave_length
             phase -= math.floor(phase)
             phase *= math.pi * 2.0
 
-            #map phase to curvature
-            targetPos = math.sin(phase)* scaleStart* waveAmplitude + steering
-            if joint not in joint_list and joint not in steer_list:
-                targetPos = 0
-
-            if joint in steer_list:
-                p.setJointMotorControl2(self._robot_id, joint, p.POSITION_CONTROL, targetPosition=steering, force=30)
+            # map phase to curvature
+            if joint in joint_list:
+                target_pos = math.sin(phase)* scale_start* wave_amplitude + steering
+            elif joint in steer_list:
+                target_pos = steering
             else:
-                p.setJointMotorControl2(self._robot_id, joint, p.POSITION_CONTROL, targetPosition=targetPos, force=30)
+                target_pos = 0
 
-        self._wave_front += dt/wavePeriod*waveLength
+            p.setJointMotorControl2(self._robot_id, joint, p.POSITION_CONTROL, targetPosition=target_pos, force=30)
+        self._wave_front += dt/wave_period*wave_length
 
     def concertina_locomotion(self):
-        waveLength = 4.2 
-        wavePeriod = 1
+        wave_length = 2
+        wave_period = 1
         dt = 1./240. 
-        waveAmplitude = 0.25
-        segmentLength = 0.4
-        
-        if (self._wave_front < segmentLength * 4.0):
-            scaleStart = self._wave_front / (segmentLength * 4.0)
+        wave_amplitude = 0.25
+        segment_length = 0.4
+        scale_start = 1
 
-        joint_list = [7, 15, 23, 31]
-    
+        if (self._wave_front < segment_length * 4.0):
+            scale_start = self._wave_front / (segment_length * 4.0)
+
+        joint_list = [8, 17, 26, 35]
+        steer_list = [3, 12, 21, 30]
         steering = self._get_keyboard_input()
 
         for joint in range(p.getNumJoints(self._robot_id)):
             
             segment = joint
-            phase = (self._wave_front - (segment + 1) * segmentLength) / waveLength
+            phase = (self._wave_front - (segment + 1) * segment_length) / wave_length
             phase -= math.floor(phase)
             phase *= math.pi * 2.0
             
             #map phase to curvature
-            targetPos = math.sin(phase)* scaleStart* waveAmplitude
-            if joint not in joint_list:
-                targetPos = 0
+            if joint in joint_list:
+                target_pos = math.sin(phase)* scale_start* wave_amplitude
+            elif joint in steer_list:
+                # Steering currently disabled for concertina locomotion.
+                target_pos = steering
+                #target_pos = 0
+            else:
+                target_pos = 0
 
-            p.setJointMotorControl2(self._robot_id, joint, p.POSITION_CONTROL, targetPosition=targetPos, force=30)
+            p.setJointMotorControl2(self._robot_id, joint, p.POSITION_CONTROL, targetPosition=target_pos, force=30)
         
-        self._wave_front += dt/wavePeriod*waveLength
+        self._wave_front += dt/wave_period*wave_length
