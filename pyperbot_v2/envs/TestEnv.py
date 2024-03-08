@@ -3,8 +3,7 @@ import numpy as np
 import math
 import pybullet as p
 import pybullet_data
-# from ..resources.goal import Goal
-# from ..resources.terrain import terrain
+
 from ..snakebot_description.snakebot_class_implementation import Snakebot
 from ..snakebot_description.snakebot_class_test import TestSnakeBot
 from ..resources.goal import Goal
