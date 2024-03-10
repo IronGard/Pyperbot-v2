@@ -52,6 +52,7 @@ def main(args):
             goal_positions = [[int(x) for x in goal_config['GOALS']['goal1'].split(',')], 
                               [int(x) for x in goal_config['GOALS']['goal2'].split(',')], 
                               [int(x) for x in goal_config['GOALS']['goal3'].split(',')]]
+            print(goal_positions)
             pyb_setup.manual_goal(len(goal_positions), goal_positions)
     # Setup robot
     if args.load_config:
@@ -61,7 +62,11 @@ def main(args):
                                     basePosition = [float(x) for x in snake_config['SNAKEBOT']['basePosition'].split(',')],
                                     baseOrientation = [float(x) for x in snake_config['SNAKEBOT']['baseOrientation'].split(',')]
                                     )
-
+    else:
+        robot_id = pyb_setup.robot("pyperbot_v2/snakebot_description/urdf/snakebot.urdf.xacro",
+                                    basePosition = [0, 0, 0],
+                                    baseOrientation = [0, 0, 0, 1]
+                                    )
     # Obtain robot information
     info = Info(robot_id)
     revolute_df, prismatic_df, _, _ = info.joint_info()
@@ -115,7 +120,7 @@ def main(args):
         try:
             all_joint_pos_df = pd.read_csv(os.path.join(results_dir, 'PPO', 'csv', f'seed{args.seed}_joint_positions.csv'))
             #read joint positions at every line
-            for i in range(len(all_joint_pos_df)):
+            for i in range(1, len(all_joint_pos_df)):
                 joint_pos = all_joint_pos_df.iloc[i].values
                 joint_pos = joint_pos[1:]
                 #apply joint positions to the robot
@@ -123,7 +128,7 @@ def main(args):
                     p.setJointMotorControl2(robot_id, moving_joints_ids[j], p.POSITION_CONTROL, joint_pos[j])
                 #step the simulation
                 p.stepSimulation()
-                time.sleep(1/240)
+                time.sleep(1/24)
 
         except(FileNotFoundError):
             print("File not found. Please ensure the file exists in the correct directory.")

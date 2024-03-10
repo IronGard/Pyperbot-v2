@@ -123,7 +123,7 @@ class UpdatedSnakeBot:
             config = configparser.ConfigParser()
             basePosition = list(np.random.uniform(-10, 10, 2)) + [0]
             # baseOrientation = list(np.random.uniform(-np.pi, np.pi, 4)) #random orientation leads to bugs in the program
-            baseOrientation = [0, 0, 0, 1]
+            baseOrientation = [0, 0, 0, -np.pi/2]
             config['SNAKEBOT'] = {'seed': str(self.seed_value),
                                   'snakebot_dir': str(snakebot_dir),
                                   'basePosition': ','.join(map(str, basePosition)),

@@ -43,12 +43,10 @@ starting_sample = 150
 
 #TODO: Add in the config setup and the config reading processes.
 #setting up logging directory in tensorboard
-log_dir_PPO = "pyperbot_v2/tensorboard_logs/PPO/"
-log_dir_A2C = "pyperbot_v2/tensorboard_logs/A2C/"
-log_dir_DDPG = "pyperbot_v2/tensorboard_logs/DDPG/"
-log_dir_DQN = "pyperbot_v2/tensorboard_logs/DQN/"
+log_dir = "pyperbot_v2/logs/"
 results_dir = "pyperbot_v2/results/"
 model_dir = "pyperbot_v2/models/"
+config_dir = "pyperbot_v2/config/seeded_run_configs/"
 #===========================================================
 
 def get_action_from_norm(action):
@@ -71,41 +69,41 @@ def main(args):
     print(f'Simulation seed: {seed}')
     # env = gym.make(f'pyperbot_v2/{args.environment}')
     env = gym.wrappers.TimeLimit(env, max_episode_steps = 2000)
-    env = Monitor(env, f'log_dir_{args.rl_algo}', allow_early_resets = True)
+    env = Monitor(env, os.path.join(results_dir, f'{args.rl_algo}'), allow_early_resets = True)
     #create evaluation callback
-    eval_callback = EvalCallback(env, best_model_save_path=os.path.join(f'log_dir_{args.rl_algo}', 'best_models'), 
-                                 log_path = os.path.join(f'log_dir_{args.rl_algo}', 'np_plots'), 
-                                 eval_freq = 5000, deterministic = True,
+    eval_callback = EvalCallback(env, best_model_save_path=os.path.join(results_dir, f'{args.rl_algo}', 'best_models'), 
+                                 log_path = os.path.join(results_dir, f'{args.rl_algo}', 'np_plots'), 
+                                 eval_freq = int(args.timesteps)/10, deterministic = True,
                                  render = False)
     #clear folder
     # file_clear(os.path.join(results_dir, 'csv'))
     # file_clear(os.path.join(results_dir, 'plots'))
-    file_clear(os.path.join(results_dir, 'PPO', 'csv'))
-    file_clear(os.path.join(results_dir, 'PPO', 'plots'))
-    file_clear(log_dir_PPO)
 
     if args.normalise:
         env = VecNormalize(env, norm_obs = True, norm_reward = True, clip_obs = 10.)
     if args.rl_algo == "PPO":
-        agent = PPO("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = log_dir_PPO, device = device)
+        agent = PPO("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'), device = device)
     elif args.rl_algo == "A2C":
-        agent = A2C("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = log_dir_A2C, device = device)
+        agent = A2C("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'), device = device)
     elif args.rl_algo == "DDPG":
-        agent = DDPG("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = log_dir_DDPG, device = device)
+        agent = DDPG("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'), device = device)
     elif args.rl_algo == "DQN":
-        agent = DQN("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = log_dir_DQN, device = device)
+        agent = DQN("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'), device = device)
     else:
         raise ValueError("Invalid reinforcement learning algorithm specified. Please specify a valid algorithm.")
     print("Environment found. Training agent...")
     agent.learn(total_timesteps = int(args.timesteps), progress_bar = True, tb_log_name = f"{args.rl_algo}_snakebot_{args.timesteps}ts", callback = eval_callback)
     agent.save(os.path.join(model_dir, f"{args.rl_algo}_snakebot"))
 
+    # Vectorise environment
+    # env = DummyVecEnv([lambda: env])
+
     # #sample action and observation
     action = env.action_space.sample()
-    print("Sampled action: ", action)
+    print("Sampled action: ", get_action_from_norm(action))
     env.reset()
     
-    obs, reward, done, _, info = env.step(action)
+    obs, reward, done, info = env.step(action)
     position_arr = []
     joint_position_arr = []
 
@@ -114,11 +112,11 @@ def main(args):
         action, states = agent.predict(obs)
         env.render()
         print(f'Action {counter} = {get_action_from_norm(action)}')
-        obs, rewards, terminated, _, info = env.step(action)
+        obs, rewards, terminated, info = env.step(action)
         print(f'Observation {counter} = {obs}')
         print(f'Reward {counter} = {rewards}')
         position_arr.append(obs[0])
-        joint_position_arr.append(action)
+        joint_position_arr.append(get_action_from_norm(action))
         time.sleep(1./240.)
         counter += 1
         if done: 

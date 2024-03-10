@@ -65,7 +65,7 @@ class Goal:
                             baseVisualShapeIndex=visualShapeId,
                             baseOrientation=[0, 45, 45, 0],
                             basePosition=[x[i], y[i], 0])
-            self.goals.append([x[i], y[i]])
+            self.goals.append([x[i], y[i], 0])
         config = configparser.ConfigParser()        
         config['GOALS'] = {'goal1': ','.join(map(str, self.goals[0])),
                            'goal2': ','.join(map(str, self.goals[1])),
