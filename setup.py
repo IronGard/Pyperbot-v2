@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name = "Pyperbot-v2",
+    name = "pyperbot_v2",
     version = "0.0.1",
     author = "Hahn Lam",
     author_email = 'hahnlon.lam@gmail.com',

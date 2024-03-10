@@ -1,5 +1,6 @@
 #updated file to match new snakerobot design
 #TODO: add option to change between different snakebots directly
+#TODO: add reward as the distance to the closest goal, not first goal
 
 import pybullet as p
 import numpy as np 
@@ -7,6 +8,8 @@ import math
 import os
 import sys
 import random
+import configparser
+from gymnasium.utils import seeding
 
 #import utils functions for loading goals and maze
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -20,7 +23,7 @@ from utils.snakebot_info import Info
 class UpdatedSnakeBot:
     def __init__(self, client, basePosition = [0, 0, 0], baseOrientation = [0, 0, 0, -np.pi/2], 
                  snakebot_dir = "pyperbot_v2/snakebot_description/urdf/updated_full_snakebot_no_macro.urdf.xacro",
-                 gait = "lateral_undulation", manual = False):
+                 gait = "lateral_undulation", manual = False, seed = 0):
         '''
         Constructor for the Snakebot class to define a snakebot object. Altered to allow for additional parameters.
 
@@ -32,11 +35,20 @@ class UpdatedSnakeBot:
             gait: the gait of the snakebot
             manual: whether the snakebot is being controlled manually
         '''
+        self.set_seed(seed)
         self._client = client
         self._gait = gait
+        
+        self.np_random, self.seed_value = seeding.np_random(seed)
         self._manual = manual
         self._robot = self.genSnakebot(snakebot_dir, basePosition, baseOrientation)
         self._info = Info(self.get_ids()[0])
+
+    def get_seed(self):
+        return self.seed_value
+    
+    def set_seed(self, seed = 0):
+        self.seed_value = seed
 
     def get_ids(self):
         '''
@@ -103,9 +115,28 @@ class UpdatedSnakeBot:
         '''
         Function to generate the snakebot in the environment
         '''
-        robot = self._client.loadURDF(fileName = snakebot_dir, 
-                                      basePosition = [0, 0, 0], 
-                                      baseOrientation = [0, 0, 0, 1])
+        if self.get_seed()!=0:
+            '''
+            Set seed for rng generator to ensure reproducibility and
+            save seed and snakebot parameters to config file for future reference.
+            '''
+            config = configparser.ConfigParser()
+            basePosition = list(np.random.uniform(-10, 10, 2)) + [0]
+            # baseOrientation = list(np.random.uniform(-np.pi, np.pi, 4)) #random orientation leads to bugs in the program
+            baseOrientation = [0, 0, 0, 1]
+            config['SNAKEBOT'] = {'seed': str(self.seed_value),
+                                  'snakebot_dir': str(snakebot_dir),
+                                  'basePosition': ','.join(map(str, basePosition)),
+                                  'baseOrientation': ','.join(map(str, baseOrientation))}
+            robot = self._client.loadURDF(fileName = snakebot_dir,
+                                          basePosition = basePosition,
+                                          baseOrientation = baseOrientation)
+            with open(os.path.join('pyperbot_v2', 'config', 'seeded_run_configs', 'snake_config', f'seed{self.get_seed()}_config.ini'), 'w') as configfile:
+                config.write(configfile)
+        else:
+            robot = self._client.loadURDF(fileName = snakebot_dir, 
+                                        basePosition = [0, 0, 0], 
+                                        baseOrientation = [0, 0, 0, 1])
         return robot
     
     def get_joint_observation(self):

@@ -3,6 +3,7 @@ import numpy as np
 import math
 import pybullet as p
 import pybullet_data
+import random
 
 from ..snakebot_description.snakebot_class_implementation import Snakebot
 from ..snakebot_description.snakebot_class_test import TestSnakeBot
@@ -61,7 +62,7 @@ class TestEnv(gym.Env):
         snake_joint_observation = self._snake.get_joint_observation()
         dist_to_goal = self.get_dist_to_goal()
         #set the reward based on improvement in distance to goal
-        reward = -dist_to_goal
+        reward = -dist_to_goal * 100
         self._done = False
         if dist_to_goal < self._finish_con:
             reward = 100
@@ -83,14 +84,17 @@ class TestEnv(gym.Env):
         '''
         Resets the simulation and returns the first observation. We may prescribe this to be the current dist_to_goal
         '''
+        self._seed = seed
+        np.random.seed(self._seed)
+        random.seed(self._seed)
         self._client = bc.BulletClient(connection_mode = p.DIRECT) #connect to pybullet client
         #self._client.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
         self._client.setRealTimeSimulation(0) #set real time simulation to 0
         self._client.setAdditionalSearchPath(pybullet_data.getDataPath())
         self._client.resetSimulation() #reset the simulation
         self._client.setGravity(0, 0, -9.81)
-        self._snake = TestSnakeBot(self._client, "pyperbot_v2/snakebot_description/urdf/normalised_snakebot_no_macro.urdf.xacro")
-        self._goal = Goal(self._client, 3) #insert goal in random position
+        self._snake = TestSnakeBot(self._client, "pyperbot_v2/snakebot_description/urdf/normalised_snakebot_no_macro.urdf.xacro", seed = seed)
+        self._goal = Goal(self._client, num_goals = 3, seed = seed) #insert goal in random position
         if env == "maze":
             self._env = Maze(self._client)
         elif env == "lab":

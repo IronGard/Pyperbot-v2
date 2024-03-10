@@ -1,3 +1,4 @@
+# import gym
 import gymnasium as gym
 import torch
 import time
@@ -11,6 +12,9 @@ import tensorflow as tf
 import argparse
 import os
 import pandas as pd
+
+#check gym installation
+print(gym.__version__)
 
 #sb3 imports
 import stable_baselines3 as sb3
@@ -28,7 +32,7 @@ warnings.filterwarnings("ignore")
 
 #making relative imports from server_code.py
 from pyperbot_v2.wrappers.TimeLimitEnv import TimeLimitEnv
-from pyperbot_v2.utils.utils import file_clear
+from pyperbot_v2.utils.utils import file_clear, plot_results, moving_average
 #=========================Constants=========================
 host = '0.0.0.0'
 port = 6969
@@ -63,6 +67,9 @@ def main(args):
         device = "cpu"
     print(f"Device found: {device}")
     env = gym.make(args.environment)
+    seed = env.seed()
+    print(f'Simulation seed: {seed}')
+    # env = gym.make(f'pyperbot_v2/{args.environment}')
     env = gym.wrappers.TimeLimit(env, max_episode_steps = 2000)
     env = Monitor(env, f'log_dir_{args.rl_algo}', allow_early_resets = True)
     #create evaluation callback
@@ -71,8 +78,11 @@ def main(args):
                                  eval_freq = 5000, deterministic = True,
                                  render = False)
     #clear folder
-    file_clear(os.path.join(results_dir, 'csv'))
-    file_clear(os.path.join(results_dir, 'plots'))
+    # file_clear(os.path.join(results_dir, 'csv'))
+    # file_clear(os.path.join(results_dir, 'plots'))
+    file_clear(os.path.join(results_dir, 'PPO', 'csv'))
+    file_clear(os.path.join(results_dir, 'PPO', 'plots'))
+    file_clear(log_dir_PPO)
 
     if args.normalise:
         env = VecNormalize(env, norm_obs = True, norm_reward = True, clip_obs = 10.)
@@ -87,12 +97,8 @@ def main(args):
     else:
         raise ValueError("Invalid reinforcement learning algorithm specified. Please specify a valid algorithm.")
     print("Environment found. Training agent...")
-    agent.learn(total_timesteps = int(args.timesteps), progress_bar = True, tb_log_name = f"{args.rl_algo}_snakebot", callback = eval_callback)
+    agent.learn(total_timesteps = int(args.timesteps), progress_bar = True, tb_log_name = f"{args.rl_algo}_snakebot_{args.timesteps}ts", callback = eval_callback)
     agent.save(os.path.join(model_dir, f"{args.rl_algo}_snakebot"))
-
-    #establishing the vectorised environment. 
-    vec_env = make_vec_env(str(args.environment), n_envs = 4)
-    obs = vec_env.reset() #call reset at the beginning of an episode
 
     # #sample action and observation
     action = env.action_space.sample()
@@ -103,21 +109,27 @@ def main(args):
     position_arr = []
     joint_position_arr = []
 
-    for i in range(1000):
+    counter = 0
+    while True:
         action, states = agent.predict(obs)
         env.render()
-        print(f'Action {i} = {get_action_from_norm(action)}')
+        print(f'Action {counter} = {get_action_from_norm(action)}')
         obs, rewards, terminated, _, info = env.step(action)
-        print(f'Observation {i} = {obs}')
-        print(f'Reward {i} = {rewards}')
+        print(f'Observation {counter} = {obs}')
+        print(f'Reward {counter} = {rewards}')
         position_arr.append(obs[0])
         joint_position_arr.append(action)
         time.sleep(1./240.)
+        counter += 1
         if done: 
+            print("Done condition achieved!")
+            break
+        if counter >= 1998:
+            print("Counter limit reached!")
             break
         #TODO - setup live data transfer instead of reading results from CSV
 
-    #generate plot for position array
+    # #generate plot for position array
     # plt.plot(position_arr)
     # plt.title('Position of the snakebot')
     # plt.xlabel('Time step')
@@ -126,27 +138,32 @@ def main(args):
     # plt.savefig(os.path.join(results_dir, 'plots', 'position_plot.png'))
     # plt.show()
 
-    # #save positions and joint velocities to csv files
-    # joint_positions_df = pd.DataFrame(joint_position_arr)
-    # joint_positions_df.to_csv(os.path.join(results_dir, 'csv', 'joint_positions.csv')) 
-    # #figure out how to save the position array to the correct address
+    #save positions and joint velocities to csv files
+    joint_positions_df = pd.DataFrame(joint_position_arr)
+    joint_positions_df.to_csv(os.path.join(results_dir, 'PPO', 'csv', f'seed{int(seed[0])}_joint_positions.csv')) 
+    #figure out how to save the position array to the correct address
 
     #plot results
-    results_plotter.plot_results([os.path.join(f'log_dir_{args.rl_algo}')],
-                                 5e4,
+    results_plotter.plot_results([f'log_dir_{args.rl_algo}'], 
+                                 int(args.timesteps),
                                  results_plotter.X_TIMESTEPS,
                                  f'{args.rl_algo} Snakebot')
+    
+    #using plot results instead
+    # plot_results(f'log_dir_{args.rl_algo}', f'{args.rl_algo} Snakebot')
+    # plt.savefig(os.path.join(results_dir, 'plots', f'{args.rl_algo}_snakebot_plot.png'))
 
     # evaluate model
-    mean_reward, std_reward = evaluate_policy(agent, agent.get_env(), n_eval_episodes = 10)
-    print(f'Mean reward = {mean_reward}')
-    print(f'Standard reward = {std_reward}')
+    # mean_reward, std_reward = evaluate_policy(agent, agent.get_env(), n_eval_episodes = 10, callback = eval_callback)
+    # print(f'Mean reward = {mean_reward}')
+    # print(f'Standard reward = {std_reward}')
     # #save results for plotting and analysis.
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = 'Run python file with or without arguments')
     #add arguments
-    parser.add_argument('-e', '--environment', help = "Name of the environment to be used for the simulation", default = "SnakebotEnv-v0")
+    parser.add_argument('-e', '--environment', help = "Name of the environment to be used for the simulation", default = "LoaderSnakebotEnv")
+    parser.add_argument('-s', '--seed', help = "Load a seed for the simulation", default = 0)
     parser.add_argument('-sb', '--snakebot', help = "Name of the snakebot to be used for the simulation", default = "simulation")
     parser.add_argument('-sm', '--save_model', help = "Decide whether to save the model or not after training", default = False)
     parser.add_argument('-l', '--load_model', help = "Decide whether to load a pre-trained model or not", default = False)
@@ -159,7 +176,6 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--terrain', help = "Terrain to be used for the simulation", default = 'maze')
     parser.add_argument('-ep', '--episodes', help = "Number of training iterations", default = 1000)
     parser.add_argument('-n', '--num_goals', help = "Number of goals to be used in the simulation", default = 3)
-    parser.add_argument('-s', '--seed', help = "Seed for the simulation", default = 42)
     args = parser.parse_args()
     print(args)
     # conn = setup_connection(s) #TODO - setup timeout condition for connection timeout

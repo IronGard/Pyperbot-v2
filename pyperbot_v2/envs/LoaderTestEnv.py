@@ -1,3 +1,4 @@
+# import gym
 import gymnasium as gym
 import numpy as np
 import math
@@ -35,8 +36,6 @@ class LoaderTestEnv(gym.Env):
             high = np.array([200, 200, 200, 3.1415, 3.1415, 3.1415, 100]),
             dtype = np.float32
         )
-        self.random, _ = gym.utils.seeding.np_random() #setting the seed for the RL environment
-        
         #Additional Params for the environment.
         self._snake = None
         self._client = None
@@ -46,6 +45,7 @@ class LoaderTestEnv(gym.Env):
         self._env = None
         self.rendered_img = None
         self.rot_matrix = None
+        self.seed()
         self.reset()
 
     def step(self, action):
@@ -63,33 +63,36 @@ class LoaderTestEnv(gym.Env):
         reward = -dist_to_goal
         self._done = False
         if dist_to_goal < self._finish_con:
-            reward = 100
+            reward += 10000
             self._done = True
         return (observation, reward, self.done, False, {"obs": snake_joint_observation})
 
     def seed(self, seed = None):
         #Generate seed for the environment
-        self.random, seed = gym.utils.seeding.np_random(seed)
+        self.np_random, seed = gym.utils.seeding.np_random(seed)
+        #cast seed to be smaller
+        self.seed_value = seed
         return [seed]
         
     def get_dist_to_goal(self):
         '''
         Function to calculate distance to goal using Euclidean Heuristic
         '''
-        return math.hypot(self._goal.get_goals()[0][0] - self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][0], self._goal.get_goals()[0][1] - self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][1])
+        return min([math.hypot(self._goal.get_goals()[i][0] - self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][0], self._goal.get_goals()[i][1] - self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][1]) for i in range(self._goal.get_num_goals())])
     
     def reset(self, seed = None, env = "maze"):
         '''
         Resets the simulation and returns the first observation. We may prescribe this to be the current dist_to_goal
         '''
         self._client = bc.BulletClient(connection_mode = p.DIRECT) #connect to pybullet client
-        #self._client.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
+        # self._client.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
         self._client.setRealTimeSimulation(0) #set real time simulation to 0
         self._client.setAdditionalSearchPath(pybullet_data.getDataPath())
         self._client.resetSimulation() #reset the simulation
         self._client.setGravity(0, 0, -9.81)
-        self._snake = UpdatedSnakeBot(self._client, "pyperbot_v2/snakebot_description/urdf/snakebot.urdf.xacro")
-        self._goal = Goal(self._client, 3) #insert goal in random position
+        print(self.seed_value)
+        self._snake = UpdatedSnakeBot(self._client, "pyperbot_v2/snakebot_description/urdf/snakebot.urdf.xacro", seed = int(self.seed_value))
+        self._goal = Goal(self._client, num_goals = 3, seed = int(self.seed_value)) #insert goal in random position
         if env == "maze":
             self._env = Maze(self._client)
         elif env == "lab":

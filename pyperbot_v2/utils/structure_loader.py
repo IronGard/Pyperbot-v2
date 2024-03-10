@@ -151,7 +151,34 @@ class Loader():
                             basePosition=[x[i], y[i], 0])
             goals.append([x[i], y[i]])
         return goals
+    
+    def manual_goal(self, num_goals, goal_positions):
+        '''
+        Manually define goals and their positions based on
+        information provided in config file.
+        '''
+        duck_scale = [1, 1, 1]
+        shift = [0, -0.02, 0]
+        visualShapeId = p.createVisualShape(shapeType=p.GEOM_MESH,
+                                            fileName="duck.obj",
+                                            rgbaColor=[1, 1, 1, 1],
+                                            specularColor=[0.4, 0.4, 0],
+                                            visualFramePosition=shift,
+                                            meshScale=duck_scale)
+
+        collisionShapeId = p.createCollisionShape(shapeType=p.GEOM_MESH,
+                                                fileName="duck_vhacd.obj",
+                                                collisionFramePosition=shift,
+                                                meshScale=duck_scale)
         
+        for i in range(num_goals):
+            p.createMultiBody(baseMass=1,
+                            baseInertialFramePosition=[0, 0, 0],
+                            baseCollisionShapeIndex=collisionShapeId,
+                            baseVisualShapeIndex=visualShapeId,
+                            baseOrientation=[0, 45, 45, 0],
+                            basePosition=goal_positions[i])
+
     def get_dist_to_goal(self, goal_pos):
         '''
         Compute the distance between the robot and the goal.

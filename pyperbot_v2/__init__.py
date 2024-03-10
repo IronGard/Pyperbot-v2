@@ -1,5 +1,6 @@
 #registration of environment
-from gymnasium.envs.registration import register 
+from gymnasium.envs.registration import register
+# from gym.envs.registration import register 
 from .envs.TestEnv import TestEnv
 from .envs.ModTestEnv import ModTestEnv
 from .envs.LoaderTestEnv import LoaderTestEnv

@@ -7,6 +7,7 @@ import math
 import os
 import sys
 import random
+import configparser
 
 #import utils functions for loading goals and maze
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -18,7 +19,7 @@ sys.path.append(parent_dir)
 class TestSnakeBot:
     def __init__(self, client, basePosition = [0, 0, 0], baseOrientation = [0, 0, 0, -np.pi/2], 
                  snakebot_dir = "pyperbot_v2/snakebot_description/urdf/updated_full_snakebot_no_macro.urdf.xacro",
-                 gait = "lateral_undulation", manual = False):
+                 gait = "lateral_undulation", manual = False, seed = 0):
         '''
         Constructor for the Snakebot class to define a snakebot object. Altered to allow for additional parameters.
 
@@ -33,6 +34,7 @@ class TestSnakeBot:
         self._client = client
         self._gait = gait
         self._manual = manual
+        self._seed = seed
         self._robot = self.genSnakebot(snakebot_dir, basePosition, baseOrientation)
         
     def get_ids(self):
@@ -100,9 +102,26 @@ class TestSnakeBot:
         '''
         Function to generate the snakebot in the environment
         '''
-        robot = self._client.loadURDF(fileName = snakebot_dir, 
-                                      basePosition = [0, 0, 0], 
-                                      baseOrientation = [0, 0, 0, 1])
+        if self._seed!=0:
+            '''
+            Set seed for rng generator to ensure reproducibility and
+            save seed and snakebot parameters to config file for future reference.
+            '''
+            random.seed(self._seed)
+            np.random.seed(self._seed)
+            config = configparser.ConfigParser()
+            basePosition = list(np.random.uniform(-10, 10, 3))
+            baseOrientation = list(np.random.uniform(-np.pi, np.pi, 4))
+            config['SNAKEBOT'] = {'seed': self._seed,
+                                  'snakebot_dir': snakebot_dir,
+                                  'basePosition': basePosition,
+                                  'baseOrientation': baseOrientation}
+            with open(os.path.join('pyperbot_v2', 'config', 'seeded_config_runs', f'seed{self._seed}_config.ini'), 'w') as configfile:
+                config.write(configfile)
+        else:
+            robot = self._client.loadURDF(fileName = snakebot_dir, 
+                                        basePosition = [0, 0, 0], 
+                                        baseOrientation = [0, 0, 0, 1])
         return robot
     
     def get_joint_observation(self):
