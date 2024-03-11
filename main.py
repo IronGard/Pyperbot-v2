@@ -2,7 +2,6 @@
 import gymnasium as gym
 import torch
 import time
-import matplotlib
 import matplotlib.pyplot as plt
 import tensorboard
 import pyperbot_v2
@@ -12,13 +11,14 @@ import tensorflow as tf
 import argparse
 import os
 import pandas as pd
+import json
 
 #check gym installation
 print(gym.__version__)
 
 #sb3 imports
 import stable_baselines3 as sb3
-from stable_baselines3 import PPO, A2C, DDPG, DQN
+from stable_baselines3 import PPO, TD3, DDPG, DQN
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.env_util import make_vec_env
@@ -31,7 +31,7 @@ from stable_baselines3.common import results_plotter
 warnings.filterwarnings("ignore")
 
 #making relative imports from server_code.py
-from pyperbot_v2.wrappers.TimeLimitEnv import TimeLimitEnv
+from pyperbot_v2.wrappers.TimeLimitEnv import TimeLimitEnv, SaveOnStepCallback
 from pyperbot_v2.utils.utils import file_clear, plot_results, moving_average
 #=========================Constants=========================
 host = '0.0.0.0'
@@ -44,9 +44,11 @@ starting_sample = 150
 #TODO: Add in the config setup and the config reading processes.
 #setting up logging directory in tensorboard
 log_dir = "pyperbot_v2/logs/"
+os.makedirs(log_dir, exist_ok = True)
 results_dir = "pyperbot_v2/results/"
-model_dir = "pyperbot_v2/models/"
+model_dir = "pyperbot_v2/models/files/"
 config_dir = "pyperbot_v2/config/seeded_run_configs/"
+params_dir = "pyperbot_v2/models/params/"
 #===========================================================
 
 def get_action_from_norm(action):
@@ -78,25 +80,37 @@ def main(args):
     #clear folder
     # file_clear(os.path.join(results_dir, 'csv'))
     # file_clear(os.path.join(results_dir, 'plots'))
+    custom_callback = SaveOnStepCallback(log_dir = os.path.join(results_dir, f'{args.rl_algo}'))
+    callback_list = [custom_callback, eval_callback]
 
     if args.normalise:
         env = VecNormalize(env, norm_obs = True, norm_reward = True, clip_obs = 10.)
     if args.rl_algo == "PPO":
-        agent = PPO("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'), device = device)
-    elif args.rl_algo == "A2C":
-        agent = A2C("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'), device = device)
+        agent = PPO("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'), device = device, seed = args.seed)
+    elif args.rl_algo == "TD3":
+        agent = TD3("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'), device = device, seed = args.seed)
     elif args.rl_algo == "DDPG":
-        agent = DDPG("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'), device = device)
+        agent = DDPG("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'), device = device, seed = args.seed)
     elif args.rl_algo == "DQN":
-        agent = DQN("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'), device = device)
+        agent = DQN("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'), device = device, seed = args.seed)
     else:
         raise ValueError("Invalid reinforcement learning algorithm specified. Please specify a valid algorithm.")
     print("Environment found. Training agent...")
-    agent.learn(total_timesteps = int(args.timesteps), progress_bar = True, tb_log_name = f"{args.rl_algo}_snakebot_{args.timesteps}ts", callback = eval_callback)
-    agent.save(os.path.join(model_dir, f"{args.rl_algo}_snakebot"))
+    agent_params = agent.get_parameters()
+    agent_params['seed'] = args.seed
+    with open(os.path.join(params_dir, f'{args.rl_algo}_params_seed{args.seed}.json'), 'w') as f:
+        json.dump(agent_params, f, indent = 4)
+    
+    #training the model
+    agent.learn(total_timesteps = int(args.timesteps), progress_bar = True, tb_log_name = f"{args.rl_algo}_snakebot_{args.timesteps}ts", callback = callback_list)
+    agent.save(os.path.join(model_dir, f"{args.rl_algo}_snakebot_seed{args.seed}"))
 
     # Vectorise environment
     # env = DummyVecEnv([lambda: env])
+    # env = VecNormalize.load(os.path.join(model_dir, f"{args.rl_algo}_snakebot"), env)
+
+    #load best model for training and eval
+    # agent = PPO.load(os.path.join(model_dir, f"{args.rl_algo}_snakebot"), env = env)
 
     # #sample action and observation
     action = env.action_space.sample()
@@ -138,23 +152,29 @@ def main(args):
 
     #save positions and joint velocities to csv files
     joint_positions_df = pd.DataFrame(joint_position_arr)
-    joint_positions_df.to_csv(os.path.join(results_dir, 'PPO', 'csv', f'seed{int(seed[0])}_joint_positions.csv')) 
+    joint_positions_df.to_csv(os.path.join(results_dir, f'{args.rl_algo}', 'csv', f'seed{int(seed[0])}_joint_positions.csv')) 
     #figure out how to save the position array to the correct address
 
     #plot results
-    results_plotter.plot_results([f'log_dir_{args.rl_algo}'], 
+    results_plotter.plot_results([os.path.join(results_dir, f'{args.rl_algo}', 'csv', f'seed{int(seed[0])}_joint_positions.csv')], 
                                  int(args.timesteps),
                                  results_plotter.X_TIMESTEPS,
                                  f'{args.rl_algo} Snakebot')
+    
+    #plot results against episodes
+    results_plotter.plot_results([os.path.join(results_dir, f'{args.rl_algo}', 'csv', f'seed{int(seed[0])}_joint_positions.csv')],
+                                  int(args.episodes),
+                                  results_plotter.X_EPISODES,
+                                  f'{args.rl_algo} Snakebot')
     
     #using plot results instead
     # plot_results(f'log_dir_{args.rl_algo}', f'{args.rl_algo} Snakebot')
     # plt.savefig(os.path.join(results_dir, 'plots', f'{args.rl_algo}_snakebot_plot.png'))
 
     # evaluate model
-    # mean_reward, std_reward = evaluate_policy(agent, agent.get_env(), n_eval_episodes = 10, callback = eval_callback)
-    # print(f'Mean reward = {mean_reward}')
-    # print(f'Standard reward = {std_reward}')
+    mean_reward, std_reward = evaluate_policy(agent, agent.get_env(), n_eval_episodes = 10, callback = eval_callback)
+    print(f'Mean reward = {mean_reward}')
+    print(f'Standard reward = {std_reward}')
     # #save results for plotting and analysis.
 
 if __name__ == "__main__":
@@ -172,9 +192,8 @@ if __name__ == "__main__":
     parser.add_argument('-nr', '--num_runs', help = "Number of runs for the timestep", default = 5)
     parser.add_argument('-la', '--load_agent', help = "Load a pre-trained agent", default = False)
     parser.add_argument('-t', '--terrain', help = "Terrain to be used for the simulation", default = 'maze')
-    parser.add_argument('-ep', '--episodes', help = "Number of training iterations", default = 1000)
+    parser.add_argument('-ep', '--episodes', help = "Number of training iterations", default = 10)
     parser.add_argument('-n', '--num_goals', help = "Number of goals to be used in the simulation", default = 3)
     args = parser.parse_args()
-    print(args)
     # conn = setup_connection(s) #TODO - setup timeout condition for connection timeout
     main(args)
