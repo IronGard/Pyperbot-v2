@@ -134,30 +134,30 @@ class server():
     def set_transmitting_data(self, transmitting_data):
         self.transmitting_data = transmitting_data
 
-#Creating a server object. This line can be run in Hahn's code.
-my_server = server("joint_positions.csv")
+# #Creating a server object. This line can be run in Hahn's code.
+# my_server = server("joint_positions.csv")
 
-#Initial debug
-my_server.debug()
-input()
+# #Initial debug
+# my_server.debug()
+# input()
 
-n = 0
-#Loops through the FETCH-DECODE-EXECUTE cycle of receiving data from the snake, decoding it, and executing (e.g., running sims to generate next set of joints, then transmitting them back to the snake)
-while True:
-    #FETCH + DECODE: Receving command from the snake
+# n = 0
+# #Loops through the FETCH-DECODE-EXECUTE cycle of receiving data from the snake, decoding it, and executing (e.g., running sims to generate next set of joints, then transmitting them back to the snake)
+# while True:
+#     #FETCH + DECODE: Receving command from the snake
 
-    #dummy_data to be replaced with live data from the sim later
-    dummy_data = my_server.dummy_transmitting_data[n]
-    n = n + 1
+#     #dummy_data to be replaced with live data from the sim later
+#     dummy_data = my_server.dummy_transmitting_data[n]
+#     n = n + 1
 
-    #Setting the feeding the live data into the server object, to be encoded into the next transmitting command
-    my_server.set_transmitting_data(dummy_data)
+#     #Setting the feeding the live data into the server object, to be encoded into the next transmitting command
+#     my_server.set_transmitting_data(dummy_data)
 
-    #Receive message from the snake
-    my_server.receive_message()
+#     #Receive message from the snake
+#     my_server.receive_message()
 
-    #EXECUTE: If the command hasn't been executed, we execute it.
-    if(my_server.get_message_status() == "UNREAD"):
-        #Execute message
-        my_server.execute_message()
+#     #EXECUTE: If the command hasn't been executed, we execute it.
+#     if(my_server.get_message_status() == "UNREAD"):
+#         #Execute message
+#         my_server.execute_message()
 
