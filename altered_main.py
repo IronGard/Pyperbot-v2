@@ -26,6 +26,7 @@ from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback,
 from stable_baselines3.common import results_plotter
 
 #other relative imports
+from pyperbot_v2.custom_agents.PPO import CustomPPO
 from pyperbot_v2.wrappers.TimeLimitEnv import TimeLimitEnv
 from pyperbot_v2.wrappers.SaveOnStepCallback import SaveOnStepCallback
 from pyperbot_v2.utils.utils import file_clear, plot_results, moving_average
@@ -74,7 +75,10 @@ def train(args):
     if args.normalise:
         env = VecNormalize(env, norm_obs = True, norm_reward = True, clip_obs = 10.)
     if args.rl_algo == "PPO":
-        agent = PPO("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'))
+        if args.custom:
+            agent = CustomPPO(env, learning_rate = args.learning_rate, batch_size = args.batch_size, gamma = args.gamma, clip_epslion = args.clip_epsilon, value_loss_coef = args.value_loss_coef, entropy_coef = args.entropy_coef)
+        else:
+            agent = PPO("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'))
     elif args.rl_algo == "TD3":
         agent = TD3("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'))
     elif args.rl_algo == "DDPG":
@@ -181,6 +185,16 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--terrain', help = "Terrain to be used for the simulation", default = 'maze')
     parser.add_argument('-ep', '--episodes', help = "Number of training iterations", default = 10)
     parser.add_argument('-n', '--num_goals', help = "Number of goals to be used in the simulation", default = 3)
+    
+    #parser arguments for custom model
+    parser.add_argument('-c', '--custom', help = "Decide whether to use a custom model or not", default = False)
+    parser.add_argument('-lr', '--learning_rate', help = "Learning rate for models", default = 0.0003)
+    parser.add_argument('-bs', '--batch_size', help = "Batch size for models", default = 64)
+    parser.add_argument('-g', '--gamma', help = "Gamma value for models", default = 0.99)
+    parser.add_argument('-ce', '--clip_epsilon', help = "Clip epsilon value for models", default = 0.2)
+    parser.add_argument('-vlc', '--value_loss_coef', help = "Value loss coefficient for models", default = 0.5)
+    parser.add_argument('-ec', '--entropy_coef', help = "Entropy coefficient for models", default = 0.01)
+
     args = parser.parse_args()
     # conn = setup_connection(s) #TODO - setup timeout condition for connection timeout
     main(args)

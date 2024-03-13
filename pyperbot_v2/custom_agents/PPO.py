@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from policy_network import PolicyNetwork
+from .policy_network import PolicyNetwork
 
-class PPO:
+class CustomPPO:
     def __init__(self, env, learning_rate=3e-4, batch_size=64, gamma=0.99, clip_epsilon=0.2, value_loss_coef=0.5, entropy_coef=0.01):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.env = env

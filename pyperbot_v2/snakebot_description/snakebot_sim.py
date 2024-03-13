@@ -158,6 +158,8 @@ if __name__ == "__main__":
 
         #Loops through the Fetch-Decode_execute cycle of receiving data from the snake, decoding it, and executing (e.g., running sims to generate the next set of joints, then transmitting them back to the RPi)
         while True:
+            feed_data = #enter live data
+            pi_server.set_transmitting_data(feed_data)
             pi_server.receive_message()
 
             if(pi_server.get_message_status() == "UNREAD"):
