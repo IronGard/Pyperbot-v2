@@ -2,9 +2,9 @@
 Most snake robots developed for search-and-rescue-tasks have relied on preprogrammed instructions in order for the robot to navigate. This project proposes to use Model-Based reinforcement learning (MBRL) to enable the robot to achieve forward locomotion and be able to navigate complex environments autonomously.
 
 ## Prerequisites
-**Gynmnaisum**
+**Gynmnaisum**  
 Install the latest version of swig and ffmpeg and add them to your PATH.  
-**Pybullet**
+**Pybullet**  
 Install the Microsoft Visual C++ Build Tools. This can be found at:  
 https://learn.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022  
 **Docker Visual Server**  
