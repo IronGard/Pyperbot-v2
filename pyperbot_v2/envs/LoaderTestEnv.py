@@ -32,7 +32,7 @@ class LoaderTestEnv(gym.Env):
         #Observation space - 8 dimensional continuous array - x,y,z position and orientation of base, remaining distance to goal, and velocity of the robot
         #we require a general number of the infomration.
         self.observation_space = gym.spaces.Box(
-            low = np.array([0, 0, 0, -3.1415, -3.1415, -3.1415, 0]), #first three are base position, next three are base orientation, next is velocity, last is distance to goal
+            low = np.array([-200, -200, -200, -3.1415, -3.1415, -3.1415, -100]), #first three are base position, next three are base orientation, next is velocity, last is distance to goal
             high = np.array([200, 200, 200, 3.1415, 3.1415, 3.1415, 100]),
             dtype = np.float32
         )
@@ -45,6 +45,7 @@ class LoaderTestEnv(gym.Env):
         self._env = None
         self.rendered_img = None
         self.rot_matrix = None
+        self.reward = 0
         self.seed()
         self.reset()
 
@@ -62,10 +63,20 @@ class LoaderTestEnv(gym.Env):
         #set the reward based on improvement in distance to goal
         reward = -dist_to_goal
         self._done = False
+        self._truncated = False
         if dist_to_goal < self._finish_con:
             reward += 10000
             self._done = True
-        return (observation, reward, self.done, False, {"obs": snake_joint_observation})
+        #TODO: add check_collision function in maze environment
+        # elif self._env.check_collision():
+        #     #if collision occurs between snake and obstacles, set reward to -1000 and end episode
+        #     reward -= 1000
+        #     self._done = True
+        #add condition for time limit if it has been hit - set truncated to true
+        # elif self._client.getElapsedTime() > 20:
+        #     self._done = True
+        #     self._truncated = True
+        return (observation, reward, self._done, self._truncated, {"obs": snake_joint_observation, "distance_to_goal": dist_to_goal, "reward": reward, "done": self._done})
 
     def seed(self, seed = None):
         #Generate seed for the environment

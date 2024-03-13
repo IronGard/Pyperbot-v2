@@ -22,7 +22,7 @@ from stable_baselines3 import PPO, TD3, DDPG, DQN
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.monitor import Monitor, ResultsWriter
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize #add option to normalise reward + observation
 from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback, EvalCallback
 from stable_baselines3.common import results_plotter
@@ -40,9 +40,6 @@ sample_step = 20
 counter = 0
 starting_sample = 150
 #===========================================================
-
-#TODO: Add in the config setup and the config reading processes.
-#setting up logging directory in tensorboard
 log_dir = "pyperbot_v2/logs/"
 os.makedirs(log_dir, exist_ok = True)
 results_dir = "pyperbot_v2/results/"
@@ -98,8 +95,7 @@ def main(args):
     print("Environment found. Training agent...")
     agent_params = agent.get_parameters()
     agent_params['seed'] = args.seed
-    with open(os.path.join(params_dir, f'{args.rl_algo}_params_seed{args.seed}.json'), 'w') as f:
-        json.dump(agent_params, f, indent = 4)
+    torch.save(agent.policy.state_dict(), os.path.join(params_dir, f'{args.rl_algo}_snakebot_seed{int(seed[0])}.pt'))
     
     #training the model
     agent.learn(total_timesteps = int(args.timesteps), progress_bar = True, tb_log_name = f"{args.rl_algo}_snakebot_{args.timesteps}ts", callback = callback_list)
@@ -195,5 +191,4 @@ if __name__ == "__main__":
     parser.add_argument('-ep', '--episodes', help = "Number of training iterations", default = 10)
     parser.add_argument('-n', '--num_goals', help = "Number of goals to be used in the simulation", default = 3)
     args = parser.parse_args()
-    # conn = setup_connection(s) #TODO - setup timeout condition for connection timeout
     main(args)
