@@ -4,7 +4,7 @@ import csv
 
 
 #Class for creating server object
-class server():
+class Server():
     def __init__(self, csv_file_path):
         self.host = '0.0.0.0'
         self.port = 6969
@@ -92,6 +92,7 @@ class server():
         self.received_command = received_message[0]
         self.received_data = received_message[1]
         self.received_message_status = received_message[2]
+        print(received_message[0])
 
     #Function for returning message_status. Checks if the received message has been executed.
     def get_message_status(self):

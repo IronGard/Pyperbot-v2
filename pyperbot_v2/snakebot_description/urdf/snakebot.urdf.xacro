@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Follows updated snakebot but with added inertial components-->
+<!-- NOTE: JOINT LIMITS CHANGED FROM -1 to 1 to 0 to 0.02-->
 <robot xmlns:xacro = "http://www.ros.org/wiki/xacro" name = "full_snakebot">
     <!-- Define colors -->
     <material name = "white">
@@ -128,7 +129,7 @@
         <parent link = "m0_bottom_bracket"/>
         <child link = "m0_virtual_link_zero"/>
         <axis xyz = "1 0 0"/>
-        <limit lower = "-0.01" upper = "0.01" effort = "10" velocity = "0.01"/>
+        <limit lower = "0" upper = "0.02" effort = "10" velocity = "0.01"/>
         <origin rpy = "0 0 0" xyz = "0 0 0"/>
     </joint>
     <!-- Joint 1: revolute -->
@@ -269,7 +270,7 @@
         <parent link = "m1_bottom_bracket"/>
         <child link = "m1_virtual_link_zero"/>
         <axis xyz = "1 0 0"/>
-        <limit lower = "-0.01" upper = "0.01" effort = "10" velocity = "0.01"/>
+        <limit lower = "0" upper = "0.02" effort = "10" velocity = "0.01"/>
         <origin rpy = "0 0 0" xyz = "0 0 0"/>
     </joint>
     <!-- Joint 1: revolute -->
@@ -410,7 +411,7 @@
         <parent link = "m2_bottom_bracket"/>
         <child link = "m2_virtual_link_zero"/>
         <axis xyz = "1 0 0"/>
-        <limit lower = "-0.01" upper = "0.01" effort = "10" velocity = "0.01"/>
+        <limit lower = "0" upper = "0.02" effort = "10" velocity = "0.01"/>
         <origin rpy = "0 0 0" xyz = "0 0 0"/>
     </joint>
     <!-- Joint 1: revolute -->
@@ -551,7 +552,7 @@
         <parent link = "m3_bottom_bracket"/>
         <child link = "m3_virtual_link_zero"/>
         <axis xyz = "1 0 0"/>
-        <limit lower = "-0.01" upper = "0.01" effort = "10" velocity = "0.01"/>
+        <limit lower = "0" upper = "0.02" effort = "10" velocity = "0.01"/>
         <origin rpy = "0 0 0" xyz = "0 0 0"/>
     </joint>
     <!-- Joint 1: revolute -->

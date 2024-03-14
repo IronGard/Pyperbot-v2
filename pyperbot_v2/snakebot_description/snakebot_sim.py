@@ -18,10 +18,12 @@ sys.path.append(parent_dir)
 from utils.structure_loader import Loader
 from utils.gaits import Gaits
 from utils.snakebot_info import Info
-from utils.server_code import Server
+from Pi_Code_folder.server import Server
 
 #Directories
 results_dir = "pyperbot_v2/results/"
+
+#TODO: ADD SAMPLING DELAY
 
 
 # Declarables
@@ -30,7 +32,7 @@ transmitting_data = []
 host = '0.0.0.0'
 port = 6969
 
-def main(args):
+def main(args, server):
     pyb_setup = Loader("--mp4=results/videos/training_video.mp4")
 
     # Setup base plane
@@ -81,8 +83,12 @@ def main(args):
 
         all_joint_pos = []
         reward_list, cum_reward, cum_reward_list = [], 0, []
+
         # Start simulation
+        delay = 200
+        counter = 0
         for i in range(args.timesteps):
+            
             # Initialise gait movement
             if args.gait == "concertina_locomotion":
                 pyb_gaits.concertina_locomotion()
@@ -108,10 +114,26 @@ def main(args):
 
             # Save all past joint positions
             joint_pos, all_joint_pos = info.joint_position(all_joint_pos)
+            new_joint_pos = ""
 
+            for j in range(len(joint_pos) - 1):
+                new_joint_pos = new_joint_pos + str(joint_pos[j]) + ","
+            
+            new_joint_pos = new_joint_pos + str(joint_pos[len(joint_pos)-1])
+            print("Gene is trolling meeeeee")
+
+            if(i > delay):
+                print("We have entered this condition")
+                server.set_transmitting_data(new_joint_pos)
+                server.receive_message()
+
+                if(server.get_message_status() == "UNREAD"):
+                    server.execute_message()
+            
             p.stepSimulation()
             time.sleep(1/240)
-    
+            counter += 1
+
         # Convert past joint positions to dataframe and export to csv
         all_joint_pos_df = pd.DataFrame(all_joint_pos)
         all_joint_pos_df.to_csv('pyperbot_v2/results/manual/csv/joint_positions.csv', index = False) 
@@ -128,7 +150,7 @@ def main(args):
                     p.setJointMotorControl2(robot_id, moving_joints_ids[j], p.POSITION_CONTROL, joint_pos[j])
                 #step the simulation
                 p.stepSimulation()
-                time.sleep(1/24)
+                time.sleep(1/240)
 
         except(FileNotFoundError):
             print("File not found. Please ensure the file exists in the correct directory.")
@@ -155,15 +177,15 @@ if __name__ == "__main__":
     if args.server:
         pi_server = Server(csv_file_path)
         pi_server.debug()
+        main(args, pi_server)
+        # #Loops through the Fetch-Decode_execute cycle of receiving data from the snake, decoding it, and executing (e.g., running sims to generate the next set of joints, then transmitting them back to the RPi)
+        # while True:
+        #     feed_data = #enter live data
+        #     pi_server.set_transmitting_data(feed_data)
+        #     pi_server.receive_message()
 
-        #Loops through the Fetch-Decode_execute cycle of receiving data from the snake, decoding it, and executing (e.g., running sims to generate the next set of joints, then transmitting them back to the RPi)
-        while True:
-            feed_data = #enter live data
-            pi_server.set_transmitting_data(feed_data)
-            pi_server.receive_message()
-
-            if(pi_server.get_message_status() == "UNREAD"):
-                pi_server.execute_message()
+        #     if(pi_server.get_message_status() == "UNREAD"):
+        #         pi_server.execute_message()
     else:
-        main(args)
+        main(args, server = None)
     
