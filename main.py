@@ -31,7 +31,8 @@ from stable_baselines3.common import results_plotter
 warnings.filterwarnings("ignore")
 
 #making relative imports from server_code.py
-from pyperbot_v2.wrappers.TimeLimitEnv import TimeLimitEnv, SaveOnStepCallback
+from pyperbot_v2.wrappers.TimeLimitEnv import TimeLimitEnv
+from pyperbot_v2.wrappers.SaveOnStepCallback import SaveOnStepCallback
 from pyperbot_v2.utils.utils import file_clear, plot_results, moving_average
 #=========================Constants=========================
 host = '0.0.0.0'

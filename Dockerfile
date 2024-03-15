@@ -56,5 +56,8 @@ RUN pip install --upgrade pip
 # Install packages from the requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install other necessary peripherals
+RUN pip install --no-cache-dir optuna-dashboard SQLAlchemy plotly 
+
 # Set the entry point to run the Python script
 CMD ["bash"]
