@@ -121,15 +121,15 @@ def main(args, server):
             
             new_joint_pos = new_joint_pos + str(joint_pos[len(joint_pos)-1])
             print("Gene is trolling meeeeee")
+            if args.server:
+                if(i > delay):
+                    print("We have entered this condition")
+                    server.set_transmitting_data(new_joint_pos)
+                    server.receive_message()
 
-            if(i > delay):
-                print("We have entered this condition")
-                server.set_transmitting_data(new_joint_pos)
-                server.receive_message()
-
-                if(server.get_message_status() == "UNREAD"):
-                    server.execute_message()
-            
+                    if(server.get_message_status() == "UNREAD"):
+                        server.execute_message()
+                
             p.stepSimulation()
             time.sleep(1/240)
             counter += 1

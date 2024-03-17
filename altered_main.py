@@ -72,6 +72,8 @@ def train(args):
     # custom_callback = SaveOnStepCallback(log_dir = os.path.join(results_dir, f'{args.rl_algo}'))
     # callback_list = [custom_callback, eval_callback]
 
+    #load best model params from optuna hyperparameter tuning.
+
     if args.normalise:
         env = VecNormalize(env, norm_obs = True, norm_reward = True, clip_obs = 10.)
     if args.rl_algo == "PPO":
@@ -123,6 +125,7 @@ def test(args):
         num_episodes = args.episodes
         episode_reward_arr = []
         cum_reward_arr = []
+        action_arr = []
         for episode in range(num_episodes):
             obs = np.array(env.reset()[0])
             done = False
@@ -130,6 +133,8 @@ def test(args):
             for timestep in range(int(args.timesteps)):
                 action, states = agent.predict(obs, deterministic = True)
                 obs, reward, done, _, info = env.step(action)
+                action = get_action_from_norm(action)
+                action_arr.append(action)
                 total_reward += reward
                 episode_reward_arr.append(reward)
             print(f'Episode: {episode + 1}, Total reward: {total_reward}')
@@ -142,16 +147,15 @@ def test(args):
         plt.savefig(os.path.join(results_dir, f'{args.rl_algo}', f'episode_rewards_{args.rl_algo}_snakebot_seed{int(args.seed)}.png'))
         plt.close()
                 
+        #saving actions to csv
+        action_df = pd.DataFrame(action_arr)
+        action_df.to_csv(os.path.join(results_dir, f'{args.rl_algo}', f'actions_{args.rl_algo}_snakebot_seed{int(args.seed)}.csv'), index = False)
+        
     #establishing mean and std reward
     mean_reward, std_reward = evaluate_policy(agent, env, n_eval_episodes = 10)
     print(f"Mean reward: {mean_reward}, Std reward: {std_reward}")
     env.close()
 
-def get_action(args):
-    '''
-    Function specifically for getting actions from loaded models
-    '''
-    pass
 
 def main(args):
     if args.file_clear:
