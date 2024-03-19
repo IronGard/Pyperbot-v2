@@ -5,7 +5,7 @@ def parse_args():
     Function to accept arguments for controlling the simulation environment.
     '''
     parser = argparse.ArgumentParser(description='snakebot_sim')
-    parser.add_argument('-e', '--env', type=str, default='none', help='Sim env: none, maze, lab.')
+    parser.add_argument('-e', '--env', type=str, default='none', help='Sim env: none, maze, lab, terrain.')
     parser.add_argument('-s', '--seed', type=int, default=0, help='Seed for the environment.')
     parser.add_argument('-lc', '--load_config', type = bool, default = False, help = 'Load a configuration file for the simulation')
     parser.add_argument('-g', '--gait', type=str, default='lateral_undulation', help='Gaits: lateral undulation, concertina_locomotion')

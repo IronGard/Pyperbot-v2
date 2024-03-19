@@ -42,8 +42,13 @@ def main(args, server):
     if args.env == "lab":
         pyb_setup.lab("pyperbot_v2/snakebot_description/meshes/lab_floor_plan.stl")
     elif args.env == "maze":
-        pyb_setup.maze("pyperbot_v2/snakebot_description/meshes/maze_10x10.stl")
-        goal_positions = pyb_setup.goal(args.num_goals)
+        pyb_setup.maze("pyperbot_v2/snakebot_description/meshes/maze.stl")
+        goal_positions = pyb_setup.goal(num_goals=args.num_goals)
+    elif args.env == "small_maze":
+        pyb_setup.maze("pyperbot_v2/snakebot_description/meshes/maze_small.stl", basePos = [-5, 0, 0])
+        goal_positions = pyb_setup.goal(num_goals=args.num_goals, size=4)
+    elif args.env == "terrain":
+        pyb_setup.terrain("pyperbot_v2/snakebot_description/meshes/terrain.stl")
     else:
         print('No selected environment.')
         if args.load_config:
@@ -66,7 +71,7 @@ def main(args, server):
                                     )
     else:
         robot_id = pyb_setup.robot("pyperbot_v2/snakebot_description/urdf/snakebot.urdf.xacro",
-                                    basePosition = [0, 0, 0],
+                                    basePosition = [0, 0, 1],
                                     baseOrientation = [0, 0, 0, 1]
                                     )
     # Obtain robot information

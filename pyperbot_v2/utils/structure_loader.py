@@ -49,7 +49,7 @@ class Loader():
                    physicsClientId = self._physicsClient, 
                    basePosition = [0, 0, 0])
 
-    def maze(self, maze_dir):
+    def maze(self, maze_dir, basePos = [-10, 0, 0]):
         '''
         Load the 20x20 maze based on the given directory. 
 
@@ -65,7 +65,7 @@ class Loader():
                                                    fileName=maze_dir, 
                                                    meshScale=maze_scale, 
                                                    flags=1)
-        p.createMultiBody(basePosition=[-10, 0, 0], 
+        p.createMultiBody(basePosition=basePos, 
                           baseVisualShapeIndex=maze_visual_id,  
                           baseCollisionShapeIndex=maze_collision_id,
                           physicsClientId = self._physicsClient)
@@ -91,7 +91,21 @@ class Loader():
                           baseVisualShapeIndex=lab_visual_id,  
                           baseCollisionShapeIndex=lab_collision_id,
                           physicsClientId = self._physicsClient)
-
+        
+    def terrain(self, terrain_dir):
+        terrain_scale = [0.5, 0.5, 0.5]
+        terrain_visual_id = p.createVisualShape(shapeType=p.GEOM_MESH, 
+                                                fileName=terrain_dir, 
+                                                meshScale=terrain_scale)
+        terrain_collision_id = p.createCollisionShape(shapeType=p.GEOM_MESH, 
+                                                      fileName=terrain_dir, 
+                                                      meshScale=terrain_scale, 
+                                                      flags=1)    
+        p.createMultiBody(basePosition=[0, 0, 0.125], 
+                          baseVisualShapeIndex=terrain_visual_id,  
+                          baseCollisionShapeIndex=terrain_collision_id,
+                          physicsClientId = self._physicsClient)
+        
     def robot(self, robot_dir, basePosition = [0.5, 0.5, 0], baseOrientation = [0, 0, 0, -np.pi/2]):
         '''
         Load the robot based on the given directory.
@@ -111,7 +125,7 @@ class Loader():
                            flags = 0|1)
         return self._robot_id
 
-    def goal(self, num_goals):
+    def goal(self, num_goals, size=9):
         '''
         Load <num_goals> number of goals.
 
@@ -141,8 +155,8 @@ class Loader():
         x, y = [], []
         goals = []
         for i in range(num_goals):
-            x.append(random.randrange(-9, 9, 2))
-            y.append(random.randrange(1, 19, 2))
+            x.append(random.randrange(-size, size, 2))
+            y.append(random.randrange(1, size*2+1, 2))
             p.createMultiBody(baseMass=1,
                             baseInertialFramePosition=[0, 0, 0],
                             baseCollisionShapeIndex=collisionShapeId,
