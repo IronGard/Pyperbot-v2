@@ -21,7 +21,7 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.monitor import Monitor, ResultsWriter
-from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize #add option to normalise reward + observation
+from stable_baselines3.common.vec_env import VecEnv, DummyVecEnv, VecNormalize, VecMonitor, SubprocVecEnv #add option to normalise reward + observation
 from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback, EvalCallback
 from stable_baselines3.common import results_plotter
 
@@ -47,6 +47,13 @@ params_dir = "pyperbot_v2/models/params/"
 os.makedirs(params_dir, exist_ok = True)
 #===========================================================
 
+def make_env(env_id, rank, seed=0):
+    def _init():
+        env = gym.make(env_id)
+        env.seed(seed + rank)
+        return env
+    return _init
+
 def get_action_from_norm(action):
     joint_upper_limits = [0.01, 0.0873, 0.2618, 0.5236, 0.5236, 0.01, 0.0873, 0.2618, 0.5236, 0.5236, 0.01, 0.0873, 0.2618, 0.5236, 0.5236, 0.01, 0.0873, 0.2618, 0.5236, 0.5236]
     joint_lower_limits = [-0.01, -0.0873, -0.2618, -0.5236, -0.5236, -0.01, -0.0873, -0.2618, -0.5236, -0.5236, -0.01, -0.0873, -0.2618, -0.5236, -0.5236, -0.01, -0.0873, -0.2618, -0.5236, -0.5236]
@@ -59,10 +66,13 @@ def train(args):
     Added customisation for PPO model. 
     '''
     #create environment
-    env = gym.make(args.environment)
-    seed = env.seed()
-    print(f"Simulation seed: {seed}")
-    env = Monitor(env, log_dir)
+    env = DummyVecEnv([make_env(args.environment, i) for i in range(4)])
+    seed_value = env.env_method("seed")[0][0]
+    print(f"Simulation seed: {seed_value}")
+    env = VecMonitor(env, log_dir)
+    env = VecNormalize(env, norm_obs = True, norm_reward = True, clip_obs = 10.)
+    env.seed(0)
+    obs = env.reset()
 
     eval_callback = EvalCallback(env, best_model_save_path=os.path.join(results_dir, f'{args.rl_algo}', 'best_models'), 
                                  log_path = os.path.join(results_dir, f'{args.rl_algo}', 'np_plots'), 
@@ -73,31 +83,29 @@ def train(args):
     # callback_list = [custom_callback, eval_callback]
 
     #load best model params from optuna hyperparameter tuning.
-
-    if args.normalise:
-        env = VecNormalize(env, norm_obs = True, norm_reward = True, clip_obs = 10.)
+    #normalise the observations and rewards and clip observations
     if args.rl_algo == "PPO":
         if args.custom:
             agent = CustomPPO(env, learning_rate = args.learning_rate, batch_size = args.batch_size, gamma = args.gamma, clip_epslion = args.clip_epsilon, value_loss_coef = args.value_loss_coef, entropy_coef = args.entropy_coef)
         else:
-            agent = PPO("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'))
+            agent = PPO("MlpPolicy", env, verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'))
     elif args.rl_algo == "TD3":
-        agent = TD3("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'))
+        agent = TD3("MlpPolicy", env, verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'))
     elif args.rl_algo == "DDPG":
-        agent = DDPG("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'))
+        agent = DDPG("MlpPolicy", env, verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'))
     elif args.rl_algo == "DQN":
-        agent = DQN("MlpPolicy", str(args.environment), verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'))
+        agent = DQN("MlpPolicy", env, verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'))
     else:
         raise ValueError("Invalid reinforcement learning algorithm specified. Please specify a valid algorithm.")
     print("Environment found. Training agent...")
-    agent_params = agent.get_parameters()
-    agent_params['seed'] = int(seed[0])
-    torch.save(agent.policy.state_dict(), os.path.join(params_dir, f'{args.rl_algo}_snakebot_seed{int(seed[0])}.pt'))
-    
+
     #training the model
     agent.learn(total_timesteps = int(args.timesteps), progress_bar = True, tb_log_name = f"{args.rl_algo}_snakebot_{args.timesteps}ts", callback = eval_callback)
-    agent.save(os.path.join(model_dir, f"{args.rl_algo}_snakebot_seed{int(seed[0])}"))
-    print(f"Model saved successfully as {args.rl_algo}_snakebot_seed{int(seed[0])}.")
+    agent.save(os.path.join(model_dir, f"{args.rl_algo}_snakebot_seed{seed_value}"))
+    agent_params = agent.get_parameters()
+    agent_params['seed'] = seed_value
+    torch.save(agent.policy.state_dict(), os.path.join(params_dir, f'{args.rl_algo}_snakebot_seed{seed_value}.pt'))
+    print(f"Model saved successfully as {args.rl_algo}_snakebot_seed{seed_value}.")
     env.close()
 
 def test(args):
@@ -156,6 +164,13 @@ def test(args):
     print(f"Mean reward: {mean_reward}, Std reward: {std_reward}")
     env.close()
 
+def get_actions_from_model(model, env, timesteps):
+    '''
+    return joint positions from model predictions in a csv file
+    '''
+    env = gym.make(args.environment)
+    
+
 
 def main(args):
     if args.file_clear:
@@ -172,7 +187,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = 'Run python file with or without arguments')
     #add arguments
-    parser.add_argument('-e', '--environment', help = "Name of the environment to be used for the simulation", default = "LoaderSnakebotEnv")
+    parser.add_argument('-e', '--environment', help = "Name of the environment to be used for the simulation", default = "StandardSnakebotEnv")
     parser.add_argument('-s', '--seed', help = "Load a seed for the simulation", default = 0)
     parser.add_argument('-m', '--mode', help = "Mode to be used for the simulation", default = "train")
     parser.add_argument('-fc', '--file_clear', help = "Decide whether to clear the file or not", default = False)
@@ -183,11 +198,11 @@ if __name__ == "__main__":
     parser.add_argument('-nm', '--normalise', help = "Normalise rewards and observations", default = False)
     parser.add_argument('-rm', '--robot_model', help = "Name of the robot model to be used for simulation", default = "snakebot")
     parser.add_argument('-rl', '--rl_algo', help = "Name of reinforvement learning algorithm to be run", default = "PPO")
-    parser.add_argument('-tt', '--timesteps', help = "Number of timesteps for the training process", default = 25000)
+    parser.add_argument('-tt', '--timesteps', help = "Number of timesteps for the training process", default = 100000)
     parser.add_argument('-nr', '--num_runs', help = "Number of runs for the timestep", default = 5)
     parser.add_argument('-la', '--load_agent', help = "Load a pre-trained agent", default = False)
     parser.add_argument('-t', '--terrain', help = "Terrain to be used for the simulation", default = 'maze')
-    parser.add_argument('-ep', '--episodes', help = "Number of training iterations", default = 10)
+    parser.add_argument('-ep', '--episodes', help = "Number of training episodes", default = 10)
     parser.add_argument('-n', '--num_goals', help = "Number of goals to be used in the simulation", default = 3)
     
     #parser arguments for custom model

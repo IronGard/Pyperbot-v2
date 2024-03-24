@@ -72,6 +72,7 @@ class Goal:
                            'goal3': ','.join(map(str, self.goals[2]))}
         with open(os.path.join('pyperbot_v2', 'config', 'seeded_run_configs', 'goal_config', f'seed{self.seed_value}_config.ini'), 'w') as configfile:
             config.write(configfile)
+
     def get_goals(self):
         '''
         Function to return the goals
@@ -83,3 +84,33 @@ class Goal:
         Function to return the number of goals
         '''
         return self.num_goals
+
+
+class SoloGoal:
+    '''
+    Fixed goal position and locationin environment
+    '''
+    def __init__(self, client, goal_position = [5, 0, 0]):
+        self.client = client
+        self.goal_position = goal_position
+        duck_scale = [1, 1, 1]
+        shift = [0, -0.02, 0]
+        visualShapeId = self.client.createVisualShape(shapeType=p.GEOM_MESH,
+                                                        fileName="duck.obj",
+                                                        rgbaColor=[1, 1, 1, 1],
+                                                        specularColor=[0.4, 0.4, 0],
+                                                        visualFramePosition=shift,
+                                                        meshScale=duck_scale)
+        collisionShapeId = self.client.createCollisionShape(shapeType=p.GEOM_MESH,
+                                                            fileName="duck_vhacd.obj",
+                                                            collisionFramePosition=shift,
+                                                            meshScale=duck_scale)
+        self.client.createMultiBody(baseMass=1,
+                                    baseInertialFramePosition=[0, 0, 0],
+                                    baseCollisionShapeIndex=collisionShapeId,
+                                    baseVisualShapeIndex=visualShapeId,
+                                    baseOrientation=[0, 45, 45, 0],
+                                    basePosition=self.goal_position)
+    
+    def get_goal_pos(self):
+        return self.goal_position

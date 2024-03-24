@@ -7,9 +7,12 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.evaluation import evaluate_policy
 from tqdm import tqdm
-import joblib
+import pickle
 import pyperbot_v2
 import optuna.visualization as vis
+import joblib
+import json
+import logging
 
 # Adding path to pyperbot_v2
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -47,24 +50,28 @@ def objective(trial):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Hyperparameter optimisation for snakebot")
     parser.add_argument('-e', '--environment', help="Environment to train the model on", default='LoaderSnakebotEnv')
-    parser.add_argument('-tt', '--timesteps', help="Number of timesteps for the simulation", default=20000, type=int)
+    parser.add_argument('-tt', '--timesteps', help="Number of timesteps for the simulation", default=10000, type=int)
     parser.add_argument('-s', '--save_path', help="Path to save the study object", default='study.pkl')
-    parser.add_argument('-p', '--plot_results', help="Plot the study results", action='store_true')
-    parser.add_argument('-c', '--clear_logs', help="Clear the logs", default = True)
+    parser.add_argument('-p', '--plot_results', help="Plot the study results", default = True, action='store_true')
+    parser.add_argument('-c', '--clear_logs', help="Clear the logs", default = False)
     args = parser.parse_args()
     
-    #define storage url
-    storage_url = "sqlite:///study.db"
+    # add optuna logging
+    optuna.logging.get_logger("optuna").addHandler(logging.StreamHandler(sys.stdout))
+    study_name = "PPO_optimisation"
 
-    study = optuna.create_study(direction="maximize", storage=storage_url)
+    #define storage url
+    storage_url = f"sqlite:///study{study_name}.db"
+
+    study = optuna.create_study(study_name = study_name, direction="maximize", storage=storage_url)
     with tqdm(total=20, desc="Trials") as pbar:
         for _ in range(20):
             print(f"Trial {_+1}/20")
             study.optimize(objective, n_trials=1)
             pbar.update(1)
             #save results of each trial to csv
-        df = study.trials_dataframe()
-        df.to_csv(f'pyperbot_v2/results/PPO/csv/trial{_+1}.csv', index = False)
+            df = study.trials_dataframe(attrs = ('number', 'value', 'params'))
+            df.to_csv(f'pyperbot_v2/results/PPO/csv/trial{_+1}.csv', index = False)
 
 
     print("Best trial:")
@@ -75,15 +82,19 @@ if __name__ == "__main__":
         print(f"    {key}: {value}")
 
     # Save the study
-    joblib.dump(study, args.save_path)
-    print(f"Study saved to {args.save_path}")
-
+    with open(args.save_path, 'wb') as f:
+        joblib.dump(study, f)
     # Plot the results if requested
     if args.plot_results:
         vis.plot_optimization_history(study)
         vis.plot_param_importances(study)
         vis.plot_parallel_coordinate(study)
         vis.plot_slice(study)
+
+        #show plots
+        vis.plot_contour(study, params = ['learning_rate', 'batch_size'])
+        vis.plot_contour(study, params = ['gamma', 'clip_range'])
+        vis.plot_contour(study, params = ['ent_coef', 'vf_coef'])
 
     # clear the logs at the end if option is enabled
     if args.clear_logs:
