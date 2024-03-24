@@ -57,7 +57,7 @@ class Gaits():
         if (self._wave_front < segment_length * 4.0):
             scale_start = self._wave_front / (segment_length * 4.0)
 
-        joint_list=[7, 16, 25, 34]
+        joint_list=[7, 16, 25, 34, 3, 12, 21, 30]
         steer_list=[3, 12, 21, 30]
         steering = self._get_keyboard_input()
 
@@ -106,6 +106,43 @@ class Gaits():
             elif joint in steer_list:
                 # Steering currently disabled for concertina locomotion.
                 target_pos = steering
+                #target_pos = 0
+            else:
+                target_pos = 0
+
+            p.setJointMotorControl2(self._robot_id, joint, p.POSITION_CONTROL, targetPosition=target_pos, force=30)
+        
+        self._wave_front += dt/wave_period*wave_length
+
+    
+    def concertina_locomotion_irl(self):
+        wave_length = 2
+        wave_period = 1
+        dt = 1./240. 
+        wave_amplitude = 0.5
+        segment_length = 0.4
+        scale_start = 1
+        
+        if (self._wave_front < segment_length * 4.0):
+            scale_start = self._wave_front / (segment_length * 4.0)
+
+        joint_list = [8, 17, 26, 35, 2, 11, 20, 29]
+        steer_list = [3, 12, 21, 30]
+        steering = self._get_keyboard_input()
+
+        for joint in range(p.getNumJoints(self._robot_id)):
+            
+            segment = joint
+            phase = (self._wave_front - (segment + 1) * segment_length) / wave_length
+            phase -= math.floor(phase)
+            phase *= math.pi * 2.0
+            
+            #map phase to curvature
+            if joint in joint_list:
+                target_pos = math.sin(phase)* scale_start* wave_amplitude
+            elif joint in steer_list:
+                # Steering currently disabled for concertina locomotion.
+                target_pos = steering*4
                 #target_pos = 0
             else:
                 target_pos = 0
