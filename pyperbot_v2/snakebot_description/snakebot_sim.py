@@ -96,7 +96,7 @@ def main(args, server):
             
             # Initialise gait movement
             if args.gait == "concertina_locomotion":
-                pyb_gaits.concertina_locomotion()
+                pyb_gaits.concertina_locomotion_irl()
             else:
                 pyb_gaits.lateral_undulation()
                 #pyb_gaits.concertina_locomotion()
@@ -125,7 +125,7 @@ def main(args, server):
                 new_joint_pos = new_joint_pos + str(joint_pos[j]) + ","
             
             new_joint_pos = new_joint_pos + str(joint_pos[len(joint_pos)-1])
-            print("Gene is trolling meeeeee")
+            #print("Gene is trolling meeeeee")
             if args.server:
                 if(i > delay):
                     print("We have entered this condition")
