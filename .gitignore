@@ -11,6 +11,7 @@ pyperbot_v2/results/*
 pyperbot_v2/tensorboard_logs/*
 __pycache__
 pyperbot_v2/utils/__pycache__/*
+pyperbot_v2/wrappers/__pycache__/*
 pyperbot_v2/resources/__pycache__/*
 pyperbot_v2/envs/__pycache__/*
 pyperbot_v2/config/seeded_config_runs/*

@@ -95,11 +95,11 @@ def main(args, server):
         for i in range(args.timesteps):
             
             # Initialise gait movement
-            if args.gait == "concertina_locomotion":
-                pyb_gaits.concertina_locomotion_irl()
+            if args.gait == "rectilinear_locomotion":
+                pyb_gaits.rectilinear_locomotion_irl()
             else:
                 pyb_gaits.lateral_undulation()
-                #pyb_gaits.concertina_locomotion()
+                #pyb_gaits.rectilinear_locomotion()
             
             # Attach head camera 
             if args.camera == 1:
