@@ -78,7 +78,7 @@ class Gaits():
             p.setJointMotorControl2(self._robot_id, joint, p.POSITION_CONTROL, targetPosition=target_pos, force=30)
         self._wave_front += dt/wave_period*wave_length
 
-    def concertina_locomotion(self):
+    def rectilinear_locomotion(self):
         wave_length = 2
         wave_period = 1
         dt = 1./240. 
@@ -115,7 +115,7 @@ class Gaits():
         self._wave_front += dt/wave_period*wave_length
 
     
-    def concertina_locomotion_irl(self):
+    def rectilinear_locomotion_irl(self):
         wave_length = 2
         wave_period = 1
         dt = 1./240. 
