@@ -19,3 +19,8 @@ register(
     id = 'LoaderSnakebotEnv-v0',
     entry_point = 'pyperbot_v2.envs:LoaderTestEnv'
 )
+
+register(
+    id = 'StandardSnakebotEnv-v0',
+    entry_point = 'pyperbot_v2.envs:StandardTestEnv'
+)

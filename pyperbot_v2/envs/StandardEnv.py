@@ -35,9 +35,10 @@ class StandardTestEnv(gym.Env):
         #initialise environment
         #normalised action space for each joint - need to adjust the joint limits for the other snake robot
         super(StandardTestEnv, self).__init__()
+        #update action space to be 8 dimensional for the 12 joints that should be moved.
         self.action_space = gym.spaces.Box(low = -1, 
                                            high = 1,
-                                           shape = (20,), 
+                                           shape = (12,), 
                                            dtype = np.float32) #20 joints in the snakebot (to be printed + appended to a CSV file)
         #Observation space - 7 dimensional array - x,y,z position and orientation of base, remaining distance to goal, and velocity of the robot
         #TODO: add VecNormalize to normalise observations before feeding to PPO agent.

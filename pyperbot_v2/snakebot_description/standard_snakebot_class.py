@@ -69,19 +69,23 @@ class StandardSnakebot:
         * Should be more precise for handling revolute and prismatic joints in particular.
         * Need to decide how to map joint movements to the snakebot's movement.
         '''
-        #action needs to be twenty dimensional
-        #consider setting prismatic and revolute joints separately.
-        #check why the render doesn't work with the client for some reason - make sure that the joint values are still being printed out appropriately at the end of the simulation.
-        #Each time step is 1.240 of a second
-        #we can calcualte the drag and friction of the car as well.
-        #debug - using p.setjointMotorControl2 to set joint motor control
-        moving_joint_list = [joint for joint in range(p.getNumJoints(self._robot)) if p.getJointInfo(self._robot, joint)[2] != p.JOINT_FIXED]
-        for i in range(len(moving_joint_list)):
-            self._client.setJointMotorControl2(self._robot, 
-                                    moving_joint_list[i], 
-                                    p.POSITION_CONTROL, 
-                                    targetPosition = actions[i], 
-                                    force = 30)
+        #fixed actions to be focusing on the eight primary joints responsible for the propagation of the snake.
+        moving_joint_list = [2, 3, 8, 11, 12, 17, 20, 21, 26, 29, 30, 35]
+        for joint in range(len(self._client.getNumJoints(self._robot))):
+            if joint in moving_joint_list:
+                counter = 0
+                self._client.setJointMotorControl2(self._robot, 
+                                        moving_joint_list[counter], 
+                                        p.POSITION_CONTROL, 
+                                        targetPosition = actions[counter], 
+                                        force = 30)
+                counter += 1
+            else:
+                self._client.setJointMotorControl2(self._robot, 
+                                        joint, 
+                                        p.POSITION_CONTROL, 
+                                        targetPosition = 0, 
+                                        force = 30)
     
     
     def gen_goals(self, num_goals = 1):
