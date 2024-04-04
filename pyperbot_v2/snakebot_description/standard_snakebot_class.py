@@ -28,8 +28,8 @@ from utils.snakebot_info import Info
 
 
 class StandardSnakebot:
-    def __init__(self, client, basePosition = [0, 0, 0], baseOrientation = [0, 0, 0, 1], 
-                 snakebot_dir = "pyperbot_v2/snakebot_description/urdf/updated_full_snakebot_no_macro.urdf.xacro",
+    def __init__(self, client, basePosition = [0, 0, 1], baseOrientation = [0, 0, 0, 1], 
+                 snakebot_dir = "pyperbot_v2/snakebot_description/urdf/snakebot.urdf.xacro",
                  gait = "lateral_undulation", manual = False, seed = 0):
         '''
         Constructor for the Snakebot class to define a snakebot object. Altered to allow for additional parameters.
@@ -71,7 +71,7 @@ class StandardSnakebot:
         '''
         #fixed actions to be focusing on the eight primary joints responsible for the propagation of the snake.
         moving_joint_list = [2, 3, 8, 11, 12, 17, 20, 21, 26, 29, 30, 35]
-        for joint in range(len(self._client.getNumJoints(self._robot))):
+        for joint in range(self._client.getNumJoints(self._robot)):
             if joint in moving_joint_list:
                 counter = 0
                 self._client.setJointMotorControl2(self._robot, 
@@ -122,8 +122,8 @@ class StandardSnakebot:
         Function to generate the snakebot in the environment
         '''
         robot = self._client.loadURDF(fileName = snakebot_dir, 
-                                      basePosition = [0, 0, 0], 
-                                      baseOrientation = [0, 0, 0, -np.pi/2])
+                                      basePosition = [0, 0, 1], 
+                                      baseOrientation = [0, 0, 0, 1])
         return robot
     
     def get_joint_observation(self):

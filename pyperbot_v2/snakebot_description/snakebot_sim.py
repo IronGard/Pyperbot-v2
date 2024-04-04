@@ -51,29 +51,29 @@ def main(args, server):
         pyb_setup.terrain("pyperbot_v2/snakebot_description/meshes/terrain.stl")
     else:
         print('No selected environment.')
-        if args.load_config:
-            goal_config = configparser.ConfigParser()
-            goal_config.read(f'pyperbot_v2/config/seeded_run_configs/goal_config/seed{args.seed}_config.ini')
-            sections = goal_config.sections()
-            print(sections)
-            goal_positions = [[int(x) for x in goal_config['GOALS']['goal1'].split(',')], 
-                              [int(x) for x in goal_config['GOALS']['goal2'].split(',')], 
-                              [int(x) for x in goal_config['GOALS']['goal3'].split(',')]]
-            print(goal_positions)
-            pyb_setup.manual_goal(len(goal_positions), goal_positions)
+        # if args.load_config:
+        #     goal_config = configparser.ConfigParser()
+        #     goal_config.read(f'pyperbot_v2/config/seeded_run_configs/goal_config/seed{args.seed}_config.ini')
+        #     sections = goal_config.sections()
+        #     print(sections)
+        #     goal_positions = [[int(x) for x in goal_config['GOALS']['goal1'].split(',')], 
+        #                       [int(x) for x in goal_config['GOALS']['goal2'].split(',')], 
+        #                       [int(x) for x in goal_config['GOALS']['goal3'].split(',')]]
+        #     print(goal_positions)
+        #     pyb_setup.manual_goal(len(goal_positions), goal_positions)
     # Setup robot
-    if args.load_config:
-        snake_config = configparser.ConfigParser()
-        snake_config.read(f'pyperbot_v2/config/seeded_run_configs/snake_config/seed{args.seed}_config.ini')
-        robot_id = pyb_setup.robot("pyperbot_v2/snakebot_description/urdf/snakebot.urdf.xacro",
-                                    basePosition = [float(x) for x in snake_config['SNAKEBOT']['basePosition'].split(',')],
-                                    baseOrientation = [float(x) for x in snake_config['SNAKEBOT']['baseOrientation'].split(',')]
-                                    )
-    else:
-        robot_id = pyb_setup.robot("pyperbot_v2/snakebot_description/urdf/snakebot.urdf.xacro",
-                                    basePosition = [0, 0, 1],
-                                    baseOrientation = [0, 0, 0, 1]
-                                    )
+    # if args.load_config:
+    #     snake_config = configparser.ConfigParser()
+    #     snake_config.read(f'pyperbot_v2/config/seeded_run_configs/snake_config/seed{args.seed}_config.ini')
+    #     robot_id = pyb_setup.robot("pyperbot_v2/snakebot_description/urdf/snakebot.urdf.xacro",
+    #                                 basePosition = [float(x) for x in snake_config['SNAKEBOT']['basePosition'].split(',')],
+    #                                 baseOrientation = [float(x) for x in snake_config['SNAKEBOT']['baseOrientation'].split(',')]
+    #                                 )
+    # else:
+    robot_id = pyb_setup.robot("pyperbot_v2/snakebot_description/urdf/snakebot.urdf.xacro",
+                                basePosition = [0, 0, 1],
+                                baseOrientation = [0, 0, 0, 1]
+                                )
     # Obtain robot information
     info = Info(robot_id)
     revolute_df, prismatic_df, _, _ = info.joint_info()
@@ -81,6 +81,9 @@ def main(args, server):
     print(prismatic_df)
     moving_joints_ids = info.moving_joint_info()
 
+    reward_list = []
+    cum_reward_list = []
+    cum_reward = 0
     # Determine robot gait type
     if not args.load_config:
         pyb_gaits = Gaits(robot_id)
@@ -116,6 +119,19 @@ def main(args, server):
                 reward_list.append(reward)
                 cum_reward += reward
                 cum_reward_list.append(cum_reward)
+            #checking manual control for standard environment
+            if args.env == "none":
+                goal_pos = [-5, 0, 0]
+                goal_vis = p.createVisualShape(shapeType=p.GEOM_SPHERE, radius=5, rgbaColor=[1, 0, 0, 1], visualFramePosition=goal_pos)
+                initial_reward = 0
+                reward = np.linalg.norm(np.array(goal_pos)[:2] - np.array(pos)[:2])
+                print("Base position: ", pos)
+                #calculate reward based on remaining distance to goal
+                print("Reward: ", -reward)
+                reward_list.append(-reward)
+                cum_reward -= reward
+                print("Cumulative reward: ", cum_reward)
+                cum_reward_list.append(cum_reward)
 
             # Save all past joint positions
             joint_pos, all_joint_pos = info.joint_position(all_joint_pos)
@@ -141,18 +157,30 @@ def main(args, server):
 
         # Convert past joint positions to dataframe and export to csv
         all_joint_pos_df = pd.DataFrame(all_joint_pos)
-        all_joint_pos_df.to_csv('pyperbot_v2/results/manual/csv/joint_positions.csv', index = False) 
+        all_joint_pos_df.to_csv('pyperbot_v2/results/manual/csv/joint_positions.csv', index = False)
+
+        #save all rewards, cumulative rewards, and base positions
+        with open('pyperbot_v2/results/manual/csv/rewards.csv', mode='w') as file:
+            writer = csv.writer(file)
+            writer.writerow(reward_list)
+            writer.writerow(cum_reward_list)
+            writer.writerow(pos) 
     else:
         # Load joint positions from csv
         try:
-            all_joint_pos_df = pd.read_csv(os.path.join(results_dir, 'PPO', 'csv', f'seed{args.seed}_joint_positions.csv'))
+            all_joint_pos_df = pd.read_csv(os.path.join(results_dir, 'PPO', f'actions_PPO_snakebot_seed{int(args.seed)}.csv'))
+            # old_joint_pos_df = pd.read_csv(os.path.join(results_dir, 'PPO', 'csv', f'seed{args.seed}_joint_positions.csv'))
+            moving_joint_ids = [2, 3, 8, 11, 12, 17, 20, 21, 26, 29, 30, 35]
             #read joint positions at every line
-            for i in range(1, len(all_joint_pos_df)):
+            for i in range(len(all_joint_pos_df)):
                 joint_pos = all_joint_pos_df.iloc[i].values
-                joint_pos = joint_pos[1:]
-                #apply joint positions to the robot
+                #apply joint positions to the robot\
+                print("Joint positions: ", joint_pos)
                 for j in range(len(joint_pos)):
-                    p.setJointMotorControl2(robot_id, moving_joints_ids[j], p.POSITION_CONTROL, joint_pos[j])
+                    if j in moving_joint_ids:
+                        p.setJointMotorControl2(robot_id, moving_joints_ids[j], p.POSITION_CONTROL, joint_pos[j])
+                    else:
+                        p.setJointMotorControl2(robot_id, moving_joints_ids[j], p.POSITION_CONTROL, 0)
                 #step the simulation
                 p.stepSimulation()
                 time.sleep(1/240)
@@ -176,7 +204,7 @@ if __name__ == "__main__":
     parser.add_argument('-g', '--gait', type=str, default='lateral_undulation', help='Gaits: lateral undulation, concertina_locomotion')
     parser.add_argument('-ng', '--num_goals', type=int, default=3, help='Number of goals (maze env only).')
     parser.add_argument('-c', '--camera', type=int, default=0, help='Attach head camera: 0, 1.')
-    parser.add_argument('-ts', '--timesteps', type=int, default=2400, help='Number of timesteps for the simulation.')
+    parser.add_argument('-ts', '--timesteps', type=int, default=5000, help='Number of timesteps for the simulation.')
     parser.add_argument('-sr', '--server', type=bool, default=False, help='Running code to read data output directly to server')
     args = parser.parse_args()
     if args.server:

@@ -66,18 +66,31 @@ def train(args):
     Added customisation for PPO model. 
     '''
     #create environment
-    env = DummyVecEnv([make_env(args.environment, i) for i in range(4)])
-    seed_value = env.env_method("seed")[0][0]
-    print(f"Simulation seed: {seed_value}")
-    env = VecMonitor(env, log_dir)
-    env = VecNormalize(env, norm_obs = True, norm_reward = True, clip_obs = 10.)
-    env.seed(0)
-    obs = env.reset()
+    if args.vectorise:
+        env = DummyVecEnv([make_env(args.environment, i) for i in range(4)])
+        seed_value = env.env_method("seed")[0][0]
+        # print(f"Simulation seed: {seed_value}")
+        env = VecMonitor(env, log_dir)
+        env = VecNormalize(env, norm_obs = True, norm_reward = True, clip_obs = 10.)
+        env.seed(0)
+        obs = env.reset()
 
+        # eval_callback = EvalCallback(env, best_model_save_path=os.path.join(results_dir, f'{args.rl_algo}', 'best_models'), 
+        #                             log_path = os.path.join(results_dir, f'{args.rl_algo}', 'np_plots'), 
+        #                             eval_freq = int(args.timesteps)/10, deterministic = True,
+        #                             render = False)
+    else:
+        env = gym.make(args.environment)
+        env = TimeLimitEnv(env, max_episode_steps = int(args.timesteps))
+        env = Monitor(env, log_dir)
+        seed_value = env.seed(0)
+        obs = env.reset()
+
+    print(f"Simulation seed: {seed_value}")
     eval_callback = EvalCallback(env, best_model_save_path=os.path.join(results_dir, f'{args.rl_algo}', 'best_models'), 
-                                 log_path = os.path.join(results_dir, f'{args.rl_algo}', 'np_plots'), 
-                                 eval_freq = int(args.timesteps)/10, deterministic = True,
-                                 render = False)
+                                log_path = os.path.join(results_dir, f'{args.rl_algo}', 'np_plots'), 
+                                eval_freq = int(args.timesteps)/10, deterministic = True,
+                                render = False)
     
     # custom_callback = SaveOnStepCallback(log_dir = os.path.join(results_dir, f'{args.rl_algo}'))
     # callback_list = [custom_callback, eval_callback]
@@ -119,7 +132,7 @@ def test(args):
     if args.normalise:
         env = VecNormalize(env, norm_obs = True, norm_reward = True, clip_obs = 10.)
     if args.rl_algo == "PPO":
-        agent = PPO.load(os.path.join(model_dir, f"{args.rl_algo}_snakebot_seed{int(args.seed)}.zip"))
+        agent = PPO.load(os.path.join(model_dir, f"{args.rl_algo}_snakebot_seed{[int(args.seed)]}.zip"))
     elif args.rl_algo == "TD3":
         agent = TD3.load(os.path.join(model_dir, f"{args.rl_algo}_snakebot_seed{int(args.seed)}.zip"))
     elif args.rl_algo == "DDPG":
@@ -204,6 +217,7 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--terrain', help = "Terrain to be used for the simulation", default = 'maze')
     parser.add_argument('-ep', '--episodes', help = "Number of training episodes", default = 10)
     parser.add_argument('-n', '--num_goals', help = "Number of goals to be used in the simulation", default = 3)
+    parser.add_argument('-v', '--vectorise', help = "Vectorise the environment", default = False)
     
     #parser arguments for custom model
     parser.add_argument('-c', '--custom', help = "Decide whether to use a custom model or not", default = False)

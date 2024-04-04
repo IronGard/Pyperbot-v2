@@ -49,16 +49,16 @@ def objective(trial):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Hyperparameter optimisation for snakebot")
-    parser.add_argument('-e', '--environment', help="Environment to train the model on", default='LoaderSnakebotEnv')
-    parser.add_argument('-tt', '--timesteps', help="Number of timesteps for the simulation", default=10000, type=int)
+    parser.add_argument('-e', '--environment', help="Environment to train the model on", default='StandardSnakebotEnv')
+    parser.add_argument('-tt', '--timesteps', help="Number of timesteps for the simulation", default=100000, type=int)
     parser.add_argument('-s', '--save_path', help="Path to save the study object", default='study.pkl')
-    parser.add_argument('-p', '--plot_results', help="Plot the study results", default = True, action='store_true')
+    parser.add_argument('-p', '--plot_results', help="Plot the study results", default = True)
     parser.add_argument('-c', '--clear_logs', help="Clear the logs", default = False)
     args = parser.parse_args()
     
     # add optuna logging
     optuna.logging.get_logger("optuna").addHandler(logging.StreamHandler(sys.stdout))
-    study_name = "PPO_optimisation"
+    study_name = "PPO_optimisation10"
 
     #define storage url
     storage_url = f"sqlite:///study{study_name}.db"
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     study = optuna.create_study(study_name = study_name, direction="maximize", storage=storage_url)
     with tqdm(total=20, desc="Trials") as pbar:
         for _ in range(20):
-            print(f"Trial {_+1}/20")
+            print(f"\n Trial {_+1}/20")
             study.optimize(objective, n_trials=1)
             pbar.update(1)
             #save results of each trial to csv

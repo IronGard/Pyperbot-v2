@@ -22,7 +22,7 @@ from utils.snakebot_info import Info
 
 class UpdatedSnakeBot:
     def __init__(self, client, basePosition = [0, 0, 0], baseOrientation = [0, 0, 0, -np.pi/2], 
-                 snakebot_dir = "pyperbot_v2/snakebot_description/urdf/updated_full_snakebot_no_macro.urdf.xacro",
+                 snakebot_dir = "pyperbot_v2/snakebot_description/urdf/snakebot.urdf.xacro",
                  gait = "lateral_undulation", manual = False, seed = 0):
         '''
         Constructor for the Snakebot class to define a snakebot object. Altered to allow for additional parameters.
@@ -121,7 +121,7 @@ class UpdatedSnakeBot:
             save seed and snakebot parameters to config file for future reference.
             '''
             config = configparser.ConfigParser()
-            basePosition = list(np.random.uniform(-10, 10, 2)) + [0]
+            basePosition = list(np.random.uniform(-10, 10, 2)) + [1]
             # baseOrientation = list(np.random.uniform(-np.pi, np.pi, 4)) #random orientation leads to bugs in the program
             baseOrientation = [0, 0, 0, -np.pi/2]
             config['SNAKEBOT'] = {'seed': str(self.seed_value),
@@ -135,7 +135,7 @@ class UpdatedSnakeBot:
                 config.write(configfile)
         else:
             robot = self._client.loadURDF(fileName = snakebot_dir, 
-                                        basePosition = [0, 0, 0], 
+                                        basePosition = [0, 0, 1], 
                                         baseOrientation = [0, 0, 0, 1])
         return robot
     

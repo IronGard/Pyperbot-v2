@@ -17,3 +17,12 @@ pyperbot_v2/envs/__pycache__/*
 pyperbot_v2/config/seeded_config_runs/*
 pyperbot_v2.egg_info/*
 pyperbot_v2/logs/*
+LICENSE-GPL
+LICENSE-SWIG
+LICENSE-UNIVERSITIES
+etc/*
+Include/*
+Lib/*
+Scripts/*
+share/*
+pyvenv.cfg
