@@ -24,6 +24,7 @@ from ..resources.plane_small import PlaneSmall
 import matplotlib.pyplot as plt
 from pybullet_utils import bullet_client as bc
 import logging 
+import configparser
 
 #framework inspired by code provided by stable baselines.
 logger = logging.getLogger(__name__)
@@ -59,8 +60,10 @@ class StandardTestEnv(gym.Env):
         self.rendered_img = None
         self.rot_matrix = None
         self.current_step = 0
-        self.max_episode_steps = 100000
+        self.max_episode_steps = 50000
         self.reward = 0
+        self.trial_number = 0
+        self.termination_condition = None
         self.seed()
         self.reset()
 
@@ -77,36 +80,53 @@ class StandardTestEnv(gym.Env):
         snake_joint_observation = self._snake.get_joint_observation()
         dist_to_goal = self.get_dist_to_goal()
         #set the reward based on improvement in distance to goal
-        reward = -dist_to_goal
-        print("reward = ", reward)
+        self.reward += self.prev_dist_to_goal - dist_to_goal
+        print("reward = ", self.reward)
+        print("Distance to Goal: ", dist_to_goal)
         self._done = False
         self._truncated = False
         #First termination condition - if distance to goal is less than finish condition, set reward to 10000 and end episode
         if dist_to_goal < self._finish_con:
-            reward += 50000
+            self.reward += 10000
             self._done = True
+            self.termination_condition = "goal reached"
         #second termination condition - if snake falls off plane, set reward to -1000 and end episode
         elif self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][2] < 0:
-            reward -= 10000
+            self.reward -= 1000
             self._done = True
+            self.termination_condition = "fallen off plane"
         #if snake falls off boundaries in x and y axes, set reward to -1000 and end episode
-        elif (self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][0] < -10 or
-            self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][0] > 10 or 
-            self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][1] < -10 or 
-            self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][1] > 10):
-            reward -= 10000
+        elif (self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][0] < -20 or
+            self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][0] > 20 or 
+            self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][1] < -20 or 
+            self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][1] > 20):
+            self.reward -= 1000
             self._done = True
+            self.termination_condition = "out_of_bounds"
         #check truncation condition
         elif self.current_step >= self.max_episode_steps:
             self._done = True
             self._truncated = True
-            reward -= 10000
+            self.reward -= 1000
+            self.termination_condition = "truncated"
+        #early termination condition: if the snake doesn't move at least 0.1 metres closer to the goal within 20% of the episode AND REWARD IS LESS THAN 1e-06
+        #i.e. the snake is stuck, terminate the episode.
+        elif (self.current_step > 0.2*self.max_episode_steps) and (self.current_step < self.max_episode_steps):
+            if (abs(dist_to_goal-self.prev_dist_to_goal) < 1e-08):
+                self.reward -= 5000
+                self._done = True
+                self.termination_condition = "stuck"
+        #last checker for reward threshold
+        elif abs(self.reward) > 1e+05:
+            self._done = True
+            self.termination_condition = "reward threshold reached"
         #set prev distance to goal to current distance to goal after update
         self.prev_dist_to_goal = dist_to_goal
         #increment current step
         self.current_step += 1
         #check information needed for vectorised environments + add KL divergence for dictionary to monitor training process.
-        return (observation, reward, self._done, self._truncated, {"obs": snake_joint_observation, "distance_to_goal": dist_to_goal, "reward": reward, "done": self._done})
+        return (observation, self.reward, self._done, self._truncated, {"obs": snake_joint_observation, "distance_to_goal": dist_to_goal, "reward": self.reward, "done": self._done, "dist_to_timestep": {"dist": dist_to_goal, "timestep": self.current_step},
+                                                                        "termination": self.termination_condition})
         #vectorised case
         #return (observation, reward, self._done, self._truncated, {"obs": snake_joint_observation, "distance_to_goal": dist_to_goal, "reward": reward, "done": self._done})
 
@@ -123,19 +143,22 @@ class StandardTestEnv(gym.Env):
         '''
         return math.hypot(self._goal.get_goal_pos()[0] - self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][0], self._goal.get_goal_pos()[1] - self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][1])
     
-    def reset(self, seed = None, env = "maze"):
+    def reset(self, seed = None, env = None):
         '''
         Resets the simulation and returns the first observation. We may prescribe this to be the current dist_to_goal
         '''
         self.current_step = 0
+        self.reward = 0
         self._client = bc.BulletClient(connection_mode = p.DIRECT) #connect to pybullet client
         # self._client.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
         self._client.setRealTimeSimulation(0) 
         self._client.setAdditionalSearchPath(pybullet_data.getDataPath())
         self._client.resetSimulation() #reset the simulation
         self._client.setGravity(0, 0, -9.81)
+        self.plane = Plane(self._client) #insert plane
         self._snake = StandardSnakebot(self._client, "pyperbot_v2/snakebot_description/urdf/snakebot.urdf.xacro", seed = int(self.seed_value))
-        self._goal = SoloGoal(self._client, [-5, 0, 0])
+        self._goal = SoloGoal(self._client, [np.random.uniform(3,10), np.random.uniform(3,10), 0], log_number = self.trial_number)  
+        print("Goal Position: ", self._goal.get_goal_pos())  
         if env == "maze":
             self._env = Maze(self._client)
         elif env == "lab":
@@ -144,17 +167,23 @@ class StandardTestEnv(gym.Env):
             self._env = MazeSmall(self._client)
         elif env == "plane-small":
             self._env = PlaneSmall(self._client)
-        self.plane = Plane(self._client) #insert plane
+        else:
+            print("No environment specified. Defaulting to Plane.")
         self.done = False
         self.prev_dist_to_goal = self.get_dist_to_goal()
+        config = configparser.ConfigParser()
+        config['DISTANCE'] = {'distance': self.prev_dist_to_goal}
+        with open(f'pyperbot_v2/logs/trial_{self.trial_number}/goal_config.ini', 'w') as configfile:
+            config.write(configfile)
         self.joint_ob = self._snake.get_joint_observation()
         base_pos, ori = self._snake.get_base_observation()[0], self._snake.get_base_observation()[1]
         print("Base Position: ", base_pos, "Base Orientation: ", ori)
         base_velocity, _ = self._client.getBaseVelocity(self._snake.get_ids()[0])
         linear_velocity = np.linalg.norm(base_velocity)
         observation = np.array(list(base_pos) + list(ori) + [linear_velocity], dtype = np.float32)
+        self.trial_number += 1
         #TODO: fix to get the actual observation to ensure that the data returned is actually in the observation space
-        return (observation, {"obs": self.joint_ob})
+        return (observation, {"obs": self.joint_ob, "trial_number": self.trial_number, 'distance_to_goal': self.prev_dist_to_goal})
     
     def render(self, mode = 'human'):
         '''

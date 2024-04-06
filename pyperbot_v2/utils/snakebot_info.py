@@ -121,3 +121,16 @@ class Info():
         past_pos.append(current_pos)
 
         return current_pos, past_pos
+    
+    def get_joint_limits(self):
+        '''
+        Obtain joint limits.
+
+        Returns:
+            joint_limits: list
+                2D list of joint limits - inner lists are [lower, upper]
+        '''
+        joint_limits = []
+        for i in self.moving_joint_info():
+            joint_limits.append(p.getJointInfo(self._robot_id, i)[8:10])
+        return joint_limits

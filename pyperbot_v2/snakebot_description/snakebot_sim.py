@@ -179,8 +179,6 @@ def main(args, server):
                 for j in range(len(joint_pos)):
                     if j in moving_joint_ids:
                         p.setJointMotorControl2(robot_id, moving_joints_ids[j], p.POSITION_CONTROL, joint_pos[j])
-                    else:
-                        p.setJointMotorControl2(robot_id, moving_joints_ids[j], p.POSITION_CONTROL, 0)
                 #step the simulation
                 p.stepSimulation()
                 time.sleep(1/240)

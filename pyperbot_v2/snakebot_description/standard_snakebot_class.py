@@ -62,6 +62,21 @@ class StandardSnakebot:
         '''
         return self._robot, self._client._client
     
+    #unnormalise action function
+    def unnormalise_action(self, action):
+        '''
+        Function to unnormalise the action space from the range [-1, 1] to the actual joint limits
+        '''
+        #get joint limits
+        moving_joint_list = [2, 3, 8, 11, 12, 17, 20, 21, 26, 29, 30, 35]
+        #get joint limits only for joints in moving joint list
+        for i in range(self._client.getNumJoints(self._robot)):
+            if i in moving_joint_list:
+                joint_limits = [self._client.getJointInfo(self._robot, joint)[8:10] for joint in moving_joint_list]
+        #unnormalise actions
+        unnormalised_actions = [action[i]*(joint_limits[i][1]-joint_limits[i][0])/2 + (joint_limits[i][1]+joint_limits[i][0])/2 for i in range(len(action))]
+        return unnormalised_actions
+    
     def apply_action(self, actions):
         '''
         Function to apply actions to the snakebot
@@ -70,22 +85,26 @@ class StandardSnakebot:
         * Need to decide how to map joint movements to the snakebot's movement.
         '''
         #fixed actions to be focusing on the eight primary joints responsible for the propagation of the snake.
+        
+        #renormalise actions from joint limits
+        actions = self.unnormalise_action(actions)
         moving_joint_list = [2, 3, 8, 11, 12, 17, 20, 21, 26, 29, 30, 35]
+        print("actions = ", actions)
+        counter = 0
         for joint in range(self._client.getNumJoints(self._robot)):
             if joint in moving_joint_list:
-                counter = 0
                 self._client.setJointMotorControl2(self._robot, 
                                         moving_joint_list[counter], 
                                         p.POSITION_CONTROL, 
                                         targetPosition = actions[counter], 
                                         force = 30)
                 counter += 1
-            else:
-                self._client.setJointMotorControl2(self._robot, 
-                                        joint, 
-                                        p.POSITION_CONTROL, 
-                                        targetPosition = 0, 
-                                        force = 30)
+            # else:
+            #     self._client.setJointMotorControl2(self._robot, 
+            #                             joint, 
+            #                             p.POSITION_CONTROL, 
+            #                             targetPosition = 0, 
+            #                             force = 30)
     
     
     def gen_goals(self, num_goals = 1):
