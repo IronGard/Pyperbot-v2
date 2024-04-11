@@ -111,12 +111,12 @@ class SoloGoal:
                                     baseVisualShapeIndex=visualShapeId,
                                     baseOrientation=[0, 45, 45, 0],
                                     basePosition=self.goal_position)
-        #save self.goal_position in log folder
-        config = configparser.ConfigParser()
-        os.makedirs(os.path.join('pyperbot_v2', 'logs', f'trial_{log_number}'), exist_ok=True)
-        config['GOAL'] = {f'goal_{log_number}': ','.join(map(str, self.goal_position))}
-        with open(os.path.join('pyperbot_v2', 'logs', f'trial_{log_number}', 'goal_config.ini'), 'w') as configfile:
-            config.write(configfile)
+        # #save self.goal_position in log folder
+        # config = configparser.ConfigParser()
+        # os.makedirs(os.path.join('pyperbot_v2', 'logs', f'trial_{log_number}'), exist_ok=True)
+        # config['GOAL'] = {f'goal_{log_number}': ','.join(map(str, self.goal_position))}
+        # with open(os.path.join('pyperbot_v2', 'logs', f'trial_{log_number}', 'goal_config.ini'), 'w') as configfile:
+        #     config.write(configfile)
     
     def get_goal_pos(self):
         return self.goal_position

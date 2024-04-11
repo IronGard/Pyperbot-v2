@@ -30,21 +30,21 @@ def objective(trial):
     gamma = trial.suggest_uniform('gamma', 0.9, 0.999)
     clip_range = trial.suggest_uniform('clip_range', 0.1, 0.3)
     ent_coef = trial.suggest_loguniform('ent_coef', 1e-8, 1e-1) #regularisation hyperparameters
-    vf_coef = trial.suggest_uniform('vf_coef', 0.1, 1.0)
+    vf_coef = trial.suggest_uniform('vf_coef', 0.5, 1.0)
 
     # Create the environment
     env = gym.make(str(args.environment))
     env = gym.wrappers.TimeLimit(env, max_episode_steps=args.timesteps)
-    trial_monitor_dir = os.path.join('pyperbot_v2/logs/', f'trial_{trial.number}')
+    trial_monitor_dir = os.path.join('pyperbot_v2/logs/', f'trial_{trial.number + 1}')
     os.makedirs(trial_monitor_dir, exist_ok=True)
     env = Monitor(env, trial_monitor_dir, allow_early_resets=True)
     # Create model
     model = PPO('MlpPolicy', env, learning_rate=learning_rate, batch_size=batch_size,
-                gamma=gamma, clip_range=clip_range, ent_coef = ent_coef, vf_coef = vf_coef, tensorboard_log='pyperbot_v2/logs/')
+                gamma=gamma, clip_range=clip_range, ent_coef = ent_coef, vf_coef = vf_coef, tensorboard_log=f'pyperbot_v2/logs/trial_{trial.number+1}')
     model.learn(total_timesteps=int(1e6))
 
     # Model evaluation
-    reward, _ = evaluate_policy(model, env, n_eval_episodes=10)
+    reward, _ = evaluate_policy(model, env, n_eval_episodes=10, deterministic = False)
     return reward
 
 if __name__ == "__main__":
@@ -66,12 +66,16 @@ if __name__ == "__main__":
     study = optuna.create_study(study_name = study_name, direction="maximize", storage=storage_url)
     with tqdm(total=10, desc="Trials") as pbar:
         for _ in range(10):
+            #create trial results folder
             print(f"\n Trial {_+1}/10")
             study.optimize(objective, n_trials=1)
             pbar.update(1)
             #save results of each trial to csv
             df = study.trials_dataframe(attrs = ('number', 'value', 'params'))
-            df.to_csv(f'pyperbot_v2/results/PPO/csv/trial{_+1}.csv', index = False)
+            df.to_csv(f'pyperbot_v2/logs/trial{_+1}', index = False)
+            #move data from stored config to logs
+            for filename in os.listdir(f'pyperbot_v2/logs/stored_configs'):
+                os.rename(f'pyperbot_v2/logs/stored_configs/{filename}', f'pyperbot_v2/logs/trial_{_+1}/{filename}')
 
 
     print("Best trial:")
@@ -89,6 +93,7 @@ if __name__ == "__main__":
         vis.plot_optimization_history(study)
         vis.plot_param_importances(study)
         vis.plot_parallel_coordinate(study)
+        vis.plot_intermediate_values(study)
         vis.plot_slice(study)
 
         #show plots

@@ -152,7 +152,7 @@ def test(args):
             done = False
             total_reward = 0
             for timestep in range(int(args.timesteps)):
-                action, states = agent.predict(obs, deterministic = True)
+                action, states = agent.predict(obs, deterministic = False)
                 obs, reward, done, _, info = env.step(action)
                 action = get_action_from_norm(action)
                 action_arr.append(action)

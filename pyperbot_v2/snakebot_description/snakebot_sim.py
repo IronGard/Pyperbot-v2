@@ -168,17 +168,19 @@ def main(args, server):
     else:
         # Load joint positions from csv
         try:
-            all_joint_pos_df = pd.read_csv(os.path.join(results_dir, 'PPO', f'actions_PPO_snakebot_seed{int(args.seed)}.csv'))
+            file_path = input("Enter the trial number to load: ")
+            all_joint_pos_df = pd.read_csv(f'pyperbot_v2/logs/actions_test1/trial_{file_path}.csv')
+            # all_joint_pos_df = pd.read_csv(os.path.join(results_dir, 'PPO', f'actions_PPO_snakebot_seed{int(args.seed)}.csv'))
             # old_joint_pos_df = pd.read_csv(os.path.join(results_dir, 'PPO', 'csv', f'seed{args.seed}_joint_positions.csv'))
             moving_joint_ids = [2, 3, 8, 11, 12, 17, 20, 21, 26, 29, 30, 35]
+            all_moving_joint_ids = [2, 3, 4, 7, 8, 11, 12, 13, 16, 17, 20, 21, 22, 25, 26, 29, 30, 31, 34, 35]
             #read joint positions at every line
             for i in range(len(all_joint_pos_df)):
                 joint_pos = all_joint_pos_df.iloc[i].values
                 #apply joint positions to the robot\
                 print("Joint positions: ", joint_pos)
-                for j in range(len(joint_pos)):
-                    if j in moving_joint_ids:
-                        p.setJointMotorControl2(robot_id, moving_joints_ids[j], p.POSITION_CONTROL, joint_pos[j])
+                for j in range(len(all_moving_joint_ids)):
+                    p.setJointMotorControl2(robot_id, all_moving_joint_ids[j], p.POSITION_CONTROL, joint_pos[j])
                 #step the simulation
                 p.stepSimulation()
                 time.sleep(1/240)
