@@ -44,10 +44,20 @@ class StandardTestEnv(gym.Env):
         #Observation space - 7 dimensional array - x,y,z position and orientation of base, remaining distance to goal, and velocity of the robot
         #TODO: add VecNormalize to normalise observations before feeding to PPO agent.
         self.observation_space = gym.spaces.Box(
-            low = np.array([-200, -200, -200, -3.1415, -3.1415, -3.1415, -100]), #first three are base position, next three are base orientation, next is velocity, last is distance to goal
-            high = np.array([200, 200, 200, 3.1415, 3.1415, 3.1415, 100]),
+            low = np.array([-20, -20, -20, -3.1415, -3.1415, -3.1415, -100]), #first three are base position, next three are base orientation, next is velocity, last is distance to goal
+            high = np.array([-20, -20, 20, 3.1415, 3.1415, 3.1415, 100]),
             dtype = np.float32
         )
+        # self.observation_space = gym.spaces.Box(
+        #     low = np.array([-0.02, -0.0873, -0.2618, -0.5236, -0.5236, 
+        #                     -0.02, -0.0873, -0.2618, -0.5236, -0.5236, 
+        #                     -0.02, -0.0873, -0.2618, -0.5236, -0.5236, 
+        #                     -0.02, -0.0873, -0.2618, -0.5236, -0.5236]), #first three are base position, next three are base orientation, next is velocity, last is distance to goal
+        #     high = np.array([0.02, 0.0873, 0.2618, 0.5236, 0.5236, 0.02, 0.0873, 0.2618, 0.5236, 0.5236,
+        #                     0.02, 0.0873, 0.2618, 0.5236, 0.5236, 0.02, 0.0873, 0.2618, 0.5236, 0.5236]), #first three are base position, next three are base orientation, next is velocity, last is distance to goal
+        #     shape = (20,),
+        #     dtype = np.float32
+        # )
         #Additional Params for the environment.
         self._snake = None
         self._client = None
@@ -85,6 +95,7 @@ class StandardTestEnv(gym.Env):
         self._snake.apply_action(action) # apply action to the robot
         self._client.stepSimulation() #step the pybullet simulation after a step is taken to update position after action is applied.
         observation = self._snake.get_observation()
+        # observation = self._snake.get_full_observation()
         #increment current step
         self.current_step += 1
         print("%======================================%")
@@ -116,7 +127,7 @@ class StandardTestEnv(gym.Env):
         self._truncated = False
         #First termination condition - if distance to goal is less than finish condition, set reward to 10000 and end episode
         if dist_to_goal < self._finish_con:
-            self.reward += 50000 + (1/self.current_step)*10000
+            self.reward += 50000 + (1/self.current_step)*1000000
             self.termination_condition = "goal reached"
             if self.current_step < 10000:
                 self.reward += 10000
@@ -170,9 +181,9 @@ class StandardTestEnv(gym.Env):
         #     self.remark = "wasteful movement"
         #     self.remark_counter += 1
         #penalise strong changes in orientation
-        if (abs(self._client.getEulerFromQuaternion(self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[1])[0]) > 0.5 or
-            abs(self._client.getEulerFromQuaternion(self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[1])[1]) > 0.5 or
-            abs(self._client.getEulerFromQuaternion(self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[1])[2]) > 0.5):
+        if (abs(self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[1][0]) > 1.5 or
+            abs(self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[1][1]) > 1.5 or
+            abs(self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[1][2]) > 1.5):
             self.reward -= 20
             self.remark = "strong changes in orientation"
             self.remark_counter += 1
@@ -297,7 +308,7 @@ class StandardTestEnv(gym.Env):
         print("Base Position: ", base_pos, "Base Orientation: ", ori)
         base_velocity, _ = self._client.getBaseVelocity(self._snake.get_ids()[0])
         linear_velocity = np.linalg.norm(base_velocity)
-        observation = np.array(list(base_pos) + list(ori) + [linear_velocity], dtype = np.float32)
+        observation = self._snake.get_observation()
         self.trial_number += 1
         #TODO: fix to get the actual observation to ensure that the data returned is actually in the observation space
         return (observation, {"obs": self.joint_ob, "trial_number": self.trial_number, 'distance_to_goal': self.prev_dist_to_goal})

@@ -193,4 +193,17 @@ class StandardSnakebot:
         observation = np.array(list(pos) + list(ori) + [linear_velocity], dtype = np.float32)
         return observation
     
+
+    def get_full_observation(self):
+        '''
+        return full observation in desired format        
+        '''
+        # pos, ang = self._client.getBasePositionAndOrientation(self._robot)
+        # ori = p.getEulerFromQuaternion(ang)
+        # base_velocity, _ = self._client.getBaseVelocity(self._robot)
+        # linear_velocity = np.linalg.norm(base_velocity)/100 #scaled lin velocity
+        joint_positions = self.get_joint_observation()[0]
+        # observation = np.array(list(pos) + list(ori) + joint_positions, dtype = np.float32)
+        observation = np.array(joint_positions, dtype = np.float32)
+        return observation
     

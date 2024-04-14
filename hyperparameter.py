@@ -42,7 +42,7 @@ def objective(trial):
     # Create model
     model = PPO('MlpPolicy', env, learning_rate=learning_rate, batch_size=batch_size,
                 gamma=gamma, clip_range=clip_range, ent_coef = ent_coef, vf_coef = vf_coef, tensorboard_log=f'pyperbot_v2/logs/trial_{trial.number+1}')
-    model.learn(total_timesteps=int(5e5))
+    model.learn(total_timesteps=int(2e5))
 
     # Model evaluation
     reward, _ = evaluate_policy(model, env, n_eval_episodes=10, deterministic = False)
@@ -59,16 +59,16 @@ if __name__ == "__main__":
     
     # add optuna logging
     optuna.logging.get_logger("optuna").addHandler(logging.StreamHandler(sys.stdout))
-    study_name = "PPO_optimisation10"
+    study_name = "PPO_optimisation11"
 
     #define storage url
     storage_url = f"sqlite:///study{study_name}.db"
 
     study = optuna.create_study(study_name = study_name, direction="maximize", storage=storage_url)
-    with tqdm(total=10, desc="Trials") as pbar:
-        for _ in range(10):
+    with tqdm(total=20, desc="Trials") as pbar:
+        for _ in range(20):
             #create trial results folder
-            print(f"\n Trial {_+1}/10")
+            print(f"\n Trial {_+1}/20")
             study.optimize(objective, n_trials=1)
             pbar.update(1)
             #save results of each trial to csv

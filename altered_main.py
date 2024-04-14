@@ -148,6 +148,8 @@ def test(args):
         agent = DDPG.load(os.path.join(model_dir, f"{args.rl_algo}_snakebot_seed{int(args.seed)}.zip"))
     elif args.rl_algo == "DQN":
         agent = DQN.load(os.path.join(model_dir, f"{args.rl_algo}_snakebot_seed{int(args.seed)}.zip"))
+    elif args.rl_algo == "RANDOM":
+        agent = None
     else:
         raise ValueError("Invalid reinforcement learning algorithm specified. Please specify a valid algorithm.")
     print("Model loaded successfully. Testing agent...")
@@ -161,7 +163,10 @@ def test(args):
             done = False
             total_reward = 0
             for timestep in range(int(args.timesteps)):
-                action, states = agent.predict(obs, deterministic = False)
+                if args.rl_algo == "RANDOM":
+                    action = env.action_space.sample()
+                else:
+                    action, states = agent.predict(obs, deterministic = False)
                 obs, reward, done, _, info = env.step(action)
                 action = get_action_from_norm(action)
                 action_arr.append(action)
@@ -180,7 +185,16 @@ def test(args):
         #saving actions to csv
         action_df = pd.DataFrame(action_arr)
         action_df.to_csv(os.path.join(results_dir, f'{args.rl_algo}', f'actions_{args.rl_algo}_snakebot_seed{int(args.seed)}.csv'), index = False)
+    
         
+        #plot rewards vs timesteps for both cumulative and episode rewards
+        plt.plot(episode_reward_arr)
+        plt.title("Episode rewards")
+        plt.xlabel("Timesteps")
+        plt.ylabel("Rewards")
+        plt.savefig(os.path.join(results_dir, f'{args.rl_algo}', f'episode_rewards_{args.rl_algo}_snakebot_seed{int(args.seed)}.png'))
+        plt.close()
+
     #establishing mean and std reward
     mean_reward, std_reward = evaluate_policy(agent, env, n_eval_episodes = 10)
     print(f"Mean reward: {mean_reward}, Std reward: {std_reward}")
