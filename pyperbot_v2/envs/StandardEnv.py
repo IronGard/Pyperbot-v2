@@ -170,11 +170,13 @@ class StandardTestEnv(gym.Env):
         #     self.remark = "wasteful movement"
         #     self.remark_counter += 1
         #penalise strong changes in orientation
-        if (abs(self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[1][1]) > 0.75 or
-              abs(self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[1][2]) > 0.75):
+        if (abs(self._client.getEulerFromQuaternion(self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[1])[0]) > 0.5 or
+            abs(self._client.getEulerFromQuaternion(self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[1])[1]) > 0.5 or
+            abs(self._client.getEulerFromQuaternion(self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[1])[2]) > 0.5):
             self.reward -= 20
-            self.remark = "strong orientation change"
+            self.remark = "strong changes in orientation"
             self.remark_counter += 1
+
         #if moving backwards, penalise
         if ((distance_traveled_to_goal < 0) and ((self.prev_dist_to_goal - dist_to_goal) <0)):
             self.reward -= 50
@@ -201,7 +203,8 @@ class StandardTestEnv(gym.Env):
                                     'distance_in_timestep': distance_traveled_in_step[i]}
                 config['REWARD'] = {'reward': self.reward[i], 'cum_reward': self.cum_reward[i]}
                 config['GOAL'] = {'goal': self._goal.get_goal_pos(i)}
-                config['SNAKE'] = {'snake_pos': self._client.getBasePositionAndOrientation(self._snake.get_ids()[i])[0], 'snake_ori': self._client.getBasePositionAndOrientation(self._snake.get_ids()[i])[1],
+                config['SNAKE'] = {'snake_pos': self._client.getBasePositionAndOrientation(self._snake.get_ids()[i])[0],
+                                    'snake_ori': self._client.getEulerFromQuaternion(self._client.getBasePositionAndOrientation(self._snake.get_ids()[i])[1]),
                                 'snake_base_pos': self.snake_init_pos[i]}
                 config['TERMINATION'] = {'termination': self.termination_condition[i] if self._done[i] else "not done"}
                 config['TIMESTEPS'] = {'timestep': self.current_step[i]}
@@ -216,7 +219,8 @@ class StandardTestEnv(gym.Env):
                                 'max_speed': self.max_dist_to_goal}
             config['REWARD'] = {'reward': self.reward, 'cum_reward': self.cum_reward}
             config['GOAL'] = {'goal': self._goal.get_goal_pos()}
-            config['SNAKE'] = {'snake_pos': self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0], 'snake_ori': self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[1],
+            config['SNAKE'] = {'snake_pos': self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0], 
+                               'snake_ori': self._client.getEulerFromQuaternion(self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[1]),
                             'snake_base_pos': self.snake_init_pos}
             config['TERMINATION'] = {'termination': self.termination_condition if self._done else "not done"}
             config['REMARKS'] = {f'remark_{self.remark_counter}': self.remark if self.remark else "no remark yet"}

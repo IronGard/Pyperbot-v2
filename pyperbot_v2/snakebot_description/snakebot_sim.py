@@ -170,7 +170,7 @@ def main(args, server):
         # Load joint positions from csv
         try:
             file_path = input("Enter the trial number to load: ")
-            all_joint_pos_df = pd.read_csv(f'pyperbot_v2/logs/newest_actions/trial_{file_path}.csv')
+            all_joint_pos_df = pd.read_csv(f'pyperbot_v2/logs/actions/trial_{file_path}.csv')
             # all_joint_pos_df = pd.read_csv(os.path.join(results_dir, 'PPO', f'actions_PPO_snakebot_seed{int(args.seed)}.csv'))
             # old_joint_pos_df = pd.read_csv(os.path.join(results_dir, 'PPO', 'csv', f'seed{args.seed}_joint_positions.csv'))
             moving_joint_ids = [2, 3, 8, 11, 12, 17, 20, 21, 26, 29, 30, 35]
@@ -188,16 +188,16 @@ def main(args, server):
                     #step the simulation
                     p.stepSimulation()
                     time.sleep(1/240)
-            # elif args.mode == 'velocity':
-            #     for i in range(len(all_joint_pos_df)):
-            #         joint_pos = all_joint_pos_df.iloc[i].values
-            #         #apply joint positions to the robot\
-            #         print("Joint positions: ", joint_pos)
-            #         for j in range(len(all_moving_joint_ids)):
-            #             p.setJointMotorControl2(robot_id, all_moving_joint_ids[j], p.VELOCITY_CONTROL, joint_pos[j])
-            #         #step the simulation
-            #         p.stepSimulation()
-            #         time.sleep(1/240)
+            elif args.mode == 'velocity':
+                for i in range(len(all_joint_pos_df)):
+                    joint_pos = all_joint_pos_df.iloc[i].values
+                    #apply joint positions to the robot\
+                    print("Joint positions: ", joint_pos)
+                    for j in range(len(all_moving_joint_ids)):
+                        p.setJointMotorControl2(robot_id, all_moving_joint_ids[j], p.VELOCITY_CONTROL, joint_pos[j])
+                    #step the simulation
+                    p.stepSimulation()
+                    time.sleep(1/240)
             # elif args.mode == 'torque':
             #     for i in range(len(all_joint_pos_df)):
             #         joint_pos = all_joint_pos_df.iloc[i].values
