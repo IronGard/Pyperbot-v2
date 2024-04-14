@@ -13,6 +13,7 @@ import optuna.visualization as vis
 import joblib
 import json
 import logging
+import configparser
 
 # Adding path to pyperbot_v2
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -41,7 +42,7 @@ def objective(trial):
     # Create model
     model = PPO('MlpPolicy', env, learning_rate=learning_rate, batch_size=batch_size,
                 gamma=gamma, clip_range=clip_range, ent_coef = ent_coef, vf_coef = vf_coef, tensorboard_log=f'pyperbot_v2/logs/trial_{trial.number+1}')
-    model.learn(total_timesteps=int(1e6))
+    model.learn(total_timesteps=int(5e5))
 
     # Model evaluation
     reward, _ = evaluate_policy(model, env, n_eval_episodes=10, deterministic = False)
@@ -50,7 +51,7 @@ def objective(trial):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Hyperparameter optimisation for snakebot")
     parser.add_argument('-e', '--environment', help="Environment to train the model on", default='StandardSnakebotEnv')
-    parser.add_argument('-tt', '--timesteps', help="Number of timesteps for the simulation", default=100000, type=int)
+    parser.add_argument('-tt', '--timesteps', help="Number of timesteps for the simulation", default=50000, type=int)
     parser.add_argument('-s', '--save_path', help="Path to save the study object", default='study.pkl')
     parser.add_argument('-p', '--plot_results', help="Plot the study results", default = True)
     parser.add_argument('-c', '--clear_logs', help="Clear the logs", default = False)

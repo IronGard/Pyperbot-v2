@@ -28,7 +28,7 @@ from utils.snakebot_info import Info
 
 
 class StandardSnakebot:
-    def __init__(self, client, basePosition = [0, 0, 1], baseOrientation = [0, 0, 0, 1], 
+    def __init__(self, client, basePosition = [0, 0, 0.5], baseOrientation = [0, 0, 0, 1], 
                  snakebot_dir = "pyperbot_v2/snakebot_description/urdf/snakebot.urdf.xacro",
                  gait = "lateral_undulation", manual = False, seed = 0):
         '''
@@ -68,11 +68,12 @@ class StandardSnakebot:
         Function to unnormalise the action space from the range [-1, 1] to the actual joint limits
         '''
         #get joint limits
+        lateral_undulation_joint_list = [7, 16, 25, 34, 3, 12, 21, 30]
         moving_joint_list = [2, 3, 8, 11, 12, 17, 20, 21, 26, 29, 30, 35]
+        all_moving_joint_ids = [2, 3, 4, 7, 8, 11, 12, 13, 16, 17, 20, 21, 22, 25, 26, 29, 30, 31, 34, 35]
         #get joint limits only for joints in moving joint list
-        for i in range(self._client.getNumJoints(self._robot)):
-            if i in moving_joint_list:
-                joint_limits = [self._client.getJointInfo(self._robot, joint)[8:10] for joint in moving_joint_list]
+        joint_limits = [self._client.getJointInfo(self._robot, joint)[8:10] for joint in all_moving_joint_ids]
+        # print(joint_limits)
         #unnormalise actions
         unnormalised_actions = [action[i]*(joint_limits[i][1]-joint_limits[i][0])/2 + (joint_limits[i][1]+joint_limits[i][0])/2 for i in range(len(action))]
         return unnormalised_actions
@@ -88,25 +89,43 @@ class StandardSnakebot:
         
         #renormalise actions from joint limits
         actions = self.unnormalise_action(actions)
+        #scale down when using velocity control
+        # actions = [action*10 for action in actions]
+        lateral_undulation_joint_list = [7, 16, 25, 34, 3, 12, 21, 30]
         moving_joint_list = [2, 3, 8, 11, 12, 17, 20, 21, 26, 29, 30, 35]
+        all_moving_joint_ids = [2, 3, 4, 7, 8, 11, 12, 13, 16, 17, 20, 21, 22, 25, 26, 29, 30, 31, 34, 35]
         print("actions = ", actions)
+        print("%======================================%\n")
         counter = 0
+        joint_list = []
         for joint in range(self._client.getNumJoints(self._robot)):
-            if joint in moving_joint_list:
+            if joint in all_moving_joint_ids:
                 self._client.setJointMotorControl2(self._robot, 
-                                        moving_joint_list[counter], 
+                                        all_moving_joint_ids[counter], 
                                         p.POSITION_CONTROL, 
                                         targetPosition = actions[counter], 
                                         force = 30)
                 counter += 1
-            # else:
-            #     self._client.setJointMotorControl2(self._robot, 
-            #                             joint, 
-            #                             p.POSITION_CONTROL, 
-            #                             targetPosition = 0, 
-            #                             force = 30)
-    
-    
+        #alternative: using velocity control instead of position control
+        # for joint in range(self._client.getNumJoints(self._robot)):
+        #     if joint in all_moving_joint_ids:
+        #         self._client.setJointMotorControl2(self._robot, 
+        #                                 all_moving_joint_ids[counter], 
+        #                                 p.VELOCITY_CONTROL, 
+        #                                 targetVelocity = actions[counter], 
+        #                                 force = 0.1)
+        #         counter += 1
+        #using joint motor control array
+        # self._client.setJointMotorControlArray(self._robot, lateral_undulation_joint_list, controlMode = p.VELOCITY_CONTROL, targetVelocities = actions, forces = 30*np.ones(len(actions)))
+        #final alternative: torque control
+        # for joint in range(self._client.getNumJoints(self._robot)):
+        #     if joint in all_moving_joint_ids:
+        #         joint_list.append(joint)
+        #         self._client.setJointMotorControl2(self._robot, 
+        #                         all_moving_joint_ids[counter], 
+        #                         p.TORQUE_CONTROL, 
+        #                         force = actions[counter])
+        #         counter += 1
     def gen_goals(self, num_goals = 1):
         '''
         Function to generate number of goals to be added to the snakebot environment
@@ -141,7 +160,7 @@ class StandardSnakebot:
         Function to generate the snakebot in the environment
         '''
         robot = self._client.loadURDF(fileName = snakebot_dir, 
-                                      basePosition = [0, 0, 1], 
+                                      basePosition = basePosition, 
                                       baseOrientation = [0, 0, 0, 1])
         return robot
     

@@ -129,22 +129,22 @@
         <parent link = "m0_bottom_bracket"/>
         <child link = "m0_virtual_link_zero"/>
         <axis xyz = "1 0 0"/>
-        <limit lower = "0" upper = "0.04" effort = "10" velocity = "0.01"/>
-        <origin rpy = "0 0 0" xyz = "0 0 0"/>
+        <limit lower = "-0.02" upper = "0.02" effort = "10" velocity = "0.1"/>
+        <origin rpy = "0 0 0" xyz = "0.02 0 0"/>
     </joint>
     <!-- Joint 1: revolute -->
     <joint name = "m0_joint_one" type = "revolute">
         <parent link = "m0_virtual_link_zero"/>
         <child link = "m0_virtual_link_one"/>
         <axis xyz = "0 0 1"/>
-        <limit lower = "-0.0873" upper = "0.0873" effort = "10" velocity = "0.01"/>
+        <limit lower = "-0.0873" upper = "0.0873" effort = "10" velocity = "0.1"/>
     </joint>
     <!-- Joint 2: revolute -->
     <joint name = "m0_joint_two" type = "revolute">
         <parent link = "m0_virtual_link_one"/>
         <child link = "m0_virtual_link_two"/>
         <axis xyz = "1 0 0"/>
-        <limit lower = "-0.2618" upper = "0.2618" effort = "10" velocity = "0.01"/>
+        <limit lower = "-0.2618" upper = "0.2618" effort = "10" velocity = "0.1"/>
         <origin xyz = "0.02 0 0"/>
     </joint>
     <!-- Spring-steel to cross-joint connection -->
@@ -163,7 +163,7 @@
         <parent link = "m0_virtual_link_three"/>
         <child link = "m0_virtual_link_four"/>
         <axis xyz = "0 0 1"/>
-        <limit lower = "-0.5236" upper = "0.5236" effort = "10" velocity = "0.01"/>
+        <limit lower = "-0.5236" upper = "0.5236" effort = "10" velocity = "0.1"/>
         <origin rpy = "0 0 0" xyz = "0 0 0"/>
     </joint>
     <!-- Joint 4: revolute -->
@@ -171,7 +171,7 @@
         <parent link = "m0_virtual_link_four"/>
         <child link = "m0_top_bracket"/>
         <axis xyz = "0 1 0"/>
-        <limit lower = "-0.5236" upper = "0.5236" effort = "10" velocity = "0.01"/>
+        <limit lower = "-0.5236" upper = "0.5236" effort = "10" velocity = "0.1"/>
         <origin rpy = "0 0 0" xyz = "0.08 0 0"/>
     </joint>
 
@@ -270,22 +270,22 @@
         <parent link = "m1_bottom_bracket"/>
         <child link = "m1_virtual_link_zero"/>
         <axis xyz = "1 0 0"/>
-        <limit lower = "0" upper = "0.04" effort = "10" velocity = "0.01"/>
-        <origin rpy = "0 0 0" xyz = "0 0 0"/>
+        <limit lower = "-0.02" upper = "0.02" effort = "10" velocity = "0.1"/>
+        <origin rpy = "0 0 0" xyz = "0.02 0 0"/>
     </joint>
     <!-- Joint 1: revolute -->
     <joint name = "m1_joint_one" type = "revolute">
         <parent link = "m1_virtual_link_zero"/>
         <child link = "m1_virtual_link_one"/>
         <axis xyz = "0 0 1"/>
-        <limit lower = "-0.0873" upper = "0.0873" effort = "10" velocity = "0.01"/>
+        <limit lower = "-0.0873" upper = "0.0873" effort = "10" velocity = "0.1"/>
     </joint>
     <!-- Joint 2: revolute -->
     <joint name = "m1_joint_two" type = "revolute">
         <parent link = "m1_virtual_link_one"/>
         <child link = "m1_virtual_link_two"/>
         <axis xyz = "1 0 0"/>
-        <limit lower = "-0.2618" upper = "0.2618" effort = "10" velocity = "0.01"/>
+        <limit lower = "-0.2618" upper = "0.2618" effort = "10" velocity = "0.1"/>
         <origin xyz = "0.02 0 0"/>
     </joint>
     <!-- Spring-steel to cross-joint connection -->
@@ -304,7 +304,7 @@
         <parent link = "m1_virtual_link_three"/>
         <child link = "m1_virtual_link_four"/>
         <axis xyz = "0 0 1"/>
-        <limit lower = "-0.5236" upper = "0.5236" effort = "10" velocity = "0.01"/>
+        <limit lower = "-0.5236" upper = "0.5236" effort = "10" velocity = "0.1"/>
         <origin rpy = "0 0 0" xyz = "0 0 0"/>
     </joint>
     <!-- Joint 4: revolute -->
@@ -312,7 +312,7 @@
         <parent link = "m1_virtual_link_four"/>
         <child link = "m1_top_bracket"/>
         <axis xyz = "0 1 0"/>
-        <limit lower = "-0.5236" upper = "0.5236" effort = "10" velocity = "0.01"/>
+        <limit lower = "-0.5236" upper = "0.5236" effort = "10" velocity = "0.1"/>
         <origin rpy = "0 0 0" xyz = "0.08 0 0"/>
     </joint>
 
@@ -411,22 +411,22 @@
         <parent link = "m2_bottom_bracket"/>
         <child link = "m2_virtual_link_zero"/>
         <axis xyz = "1 0 0"/>
-        <limit lower = "0" upper = "0.04" effort = "10" velocity = "0.01"/>
-        <origin rpy = "0 0 0" xyz = "0 0 0"/>
+        <limit lower = "-0.02" upper = "0.02" effort = "10" velocity = "0.1"/>
+        <origin rpy = "0 0 0" xyz = "0.02 0 0"/>
     </joint>
     <!-- Joint 1: revolute -->
     <joint name = "m2_joint_one" type = "revolute">
         <parent link = "m2_virtual_link_zero"/>
         <child link = "m2_virtual_link_one"/>
         <axis xyz = "0 0 1"/>
-        <limit lower = "-0.0873" upper = "0.0873" effort = "10" velocity = "0.01"/>
+        <limit lower = "-0.0873" upper = "0.0873" effort = "10" velocity = "0.1"/>
     </joint>
     <!-- Joint 2: revolute -->
     <joint name = "m2_joint_two" type = "revolute">
         <parent link = "m2_virtual_link_one"/>
         <child link = "m2_virtual_link_two"/>
         <axis xyz = "1 0 0"/>
-        <limit lower = "-0.2618" upper = "0.2618" effort = "10" velocity = "0.01"/>
+        <limit lower = "-0.2618" upper = "0.2618" effort = "10" velocity = "0.1"/>
         <origin xyz = "0.02 0 0"/>
     </joint>
     <!-- Spring-steel to cross-joint connection -->
@@ -445,7 +445,7 @@
         <parent link = "m2_virtual_link_three"/>
         <child link = "m2_virtual_link_four"/>
         <axis xyz = "0 0 1"/>
-        <limit lower = "-0.5236" upper = "0.5236" effort = "10" velocity = "0.01"/>
+        <limit lower = "-0.5236" upper = "0.5236" effort = "10" velocity = "0.1"/>
         <origin rpy = "0 0 0" xyz = "0 0 0"/>
     </joint>
     <!-- Joint 4: revolute -->
@@ -453,7 +453,7 @@
         <parent link = "m2_virtual_link_four"/>
         <child link = "m2_top_bracket"/>
         <axis xyz = "0 1 0"/>
-        <limit lower = "-0.5236" upper = "0.5236" effort = "10" velocity = "0.01"/>
+        <limit lower = "-0.5236" upper = "0.5236" effort = "10" velocity = "0.1"/>
         <origin rpy = "0 0 0" xyz = "0.08 0 0"/>
     </joint>
 
@@ -552,22 +552,22 @@
         <parent link = "m3_bottom_bracket"/>
         <child link = "m3_virtual_link_zero"/>
         <axis xyz = "1 0 0"/>
-        <limit lower = "0" upper = "0.04" effort = "10" velocity = "0.01"/>
-        <origin rpy = "0 0 0" xyz = "0 0 0"/>
+        <limit lower = "-0.02" upper = "0.02" effort = "10" velocity = "0.1"/>
+        <origin rpy = "0 0 0" xyz = "0.02 0 0"/>
     </joint>
     <!-- Joint 1: revolute -->
     <joint name = "m3_joint_one" type = "revolute">
         <parent link = "m3_virtual_link_zero"/>
         <child link = "m3_virtual_link_one"/>
         <axis xyz = "0 0 1"/>
-        <limit lower = "-0.0873" upper = "0.0873" effort = "10" velocity = "0.01"/>
+        <limit lower = "-0.0873" upper = "0.0873" effort = "10" velocity = "0.1"/>
     </joint>
     <!-- Joint 2: revolute -->
     <joint name = "m3_joint_two" type = "revolute">
         <parent link = "m3_virtual_link_one"/>
         <child link = "m3_virtual_link_two"/>
         <axis xyz = "1 0 0"/>
-        <limit lower = "-0.2618" upper = "0.2618" effort = "10" velocity = "0.01"/>
+        <limit lower = "-0.2618" upper = "0.2618" effort = "10" velocity = "0.1"/>
         <origin xyz = "0.02 0 0"/>
     </joint>
     <!-- Spring-steel to cross-joint connection -->
@@ -586,7 +586,7 @@
         <parent link = "m3_virtual_link_three"/>
         <child link = "m3_virtual_link_four"/>
         <axis xyz = "0 0 1"/>
-        <limit lower = "-0.5236" upper = "0.5236" effort = "10" velocity = "0.01"/>
+        <limit lower = "-0.5236" upper = "0.5236" effort = "10" velocity = "0.1"/>
         <origin rpy = "0 0 0" xyz = "0 0 0"/>
     </joint>
     <!-- Joint 4: revolute -->
@@ -594,7 +594,7 @@
         <parent link = "m3_virtual_link_four"/>
         <child link = "m3_top_bracket"/>
         <axis xyz = "0 1 0"/>
-        <limit lower = "-0.5236" upper = "0.5236" effort = "10" velocity = "0.01"/>
+        <limit lower = "-0.5236" upper = "0.5236" effort = "10" velocity = "0.1"/>
         <origin rpy = "0 0 0" xyz = "0.08 0 0"/>
     </joint>
     

@@ -72,7 +72,7 @@ def main(args, server):
     # else:
     robot_id = pyb_setup.robot("pyperbot_v2/snakebot_description/urdf/snakebot.urdf.xacro",
                                 basePosition = [0, 0, 1],
-                                baseOrientation = [0, 0, 0, 1]
+                                baseOrientation = [0.5, 0, 0, 1]
                                 )
     # Obtain robot information
     info = Info(robot_id)
@@ -127,7 +127,8 @@ def main(args, server):
                 reward = np.linalg.norm(np.array(goal_pos)[:2] - np.array(pos)[:2])
                 print("Base position: ", pos)
                 #calculate reward based on remaining distance to goal
-                print("Reward: ", -reward)
+                # print("Reward: ", -reward)
+                print("Distance to goal: ", reward)
                 reward_list.append(-reward)
                 cum_reward -= reward
                 print("Cumulative reward: ", cum_reward)
@@ -169,21 +170,44 @@ def main(args, server):
         # Load joint positions from csv
         try:
             file_path = input("Enter the trial number to load: ")
-            all_joint_pos_df = pd.read_csv(f'pyperbot_v2/logs/actions_test1/trial_{file_path}.csv')
+            all_joint_pos_df = pd.read_csv(f'pyperbot_v2/logs/newest_actions/trial_{file_path}.csv')
             # all_joint_pos_df = pd.read_csv(os.path.join(results_dir, 'PPO', f'actions_PPO_snakebot_seed{int(args.seed)}.csv'))
             # old_joint_pos_df = pd.read_csv(os.path.join(results_dir, 'PPO', 'csv', f'seed{args.seed}_joint_positions.csv'))
             moving_joint_ids = [2, 3, 8, 11, 12, 17, 20, 21, 26, 29, 30, 35]
             all_moving_joint_ids = [2, 3, 4, 7, 8, 11, 12, 13, 16, 17, 20, 21, 22, 25, 26, 29, 30, 31, 34, 35]
             #read joint positions at every line
-            for i in range(len(all_joint_pos_df)):
-                joint_pos = all_joint_pos_df.iloc[i].values
-                #apply joint positions to the robot\
-                print("Joint positions: ", joint_pos)
-                for j in range(len(all_moving_joint_ids)):
-                    p.setJointMotorControl2(robot_id, all_moving_joint_ids[j], p.POSITION_CONTROL, joint_pos[j])
-                #step the simulation
-                p.stepSimulation()
-                time.sleep(1/240)
+            if args.mode == 'position':
+                for i in range(len(all_joint_pos_df)):
+                    joint_pos = all_joint_pos_df.iloc[i].values
+                    #apply joint positions to the robot\
+                    print("Joint positions: ", joint_pos)
+                    print("Base Position: ", info.base_info()[0])
+                    print("Base Orientation: ", info.base_info()[1])
+                    for j in range(len(all_moving_joint_ids)):
+                        p.setJointMotorControl2(robot_id, all_moving_joint_ids[j], p.POSITION_CONTROL, joint_pos[j])
+                    #step the simulation
+                    p.stepSimulation()
+                    time.sleep(1/240)
+            # elif args.mode == 'velocity':
+            #     for i in range(len(all_joint_pos_df)):
+            #         joint_pos = all_joint_pos_df.iloc[i].values
+            #         #apply joint positions to the robot\
+            #         print("Joint positions: ", joint_pos)
+            #         for j in range(len(all_moving_joint_ids)):
+            #             p.setJointMotorControl2(robot_id, all_moving_joint_ids[j], p.VELOCITY_CONTROL, joint_pos[j])
+            #         #step the simulation
+            #         p.stepSimulation()
+            #         time.sleep(1/240)
+            # elif args.mode == 'torque':
+            #     for i in range(len(all_joint_pos_df)):
+            #         joint_pos = all_joint_pos_df.iloc[i].values
+            #         #apply joint positions to the robot\
+            #         print("Joint positions: ", joint_pos)
+            #         for j in range(len(all_moving_joint_ids)):
+            #             p.setJointMotorControl2(robot_id, all_moving_joint_ids[j], p.TORQUE_CONTROL, joint_pos[j])
+            #         #step the simulation
+            #         p.stepSimulation()
+            #         time.sleep(1/240)
 
         except(FileNotFoundError):
             print("File not found. Please ensure the file exists in the correct directory.")
@@ -202,6 +226,7 @@ if __name__ == "__main__":
     parser.add_argument('-s', '--seed', type=int, default=0, help='Seed for the environment.')
     parser.add_argument('-lc', '--load_config', type = bool, default = False, help = 'Load a configuration file for the simulation')
     parser.add_argument('-g', '--gait', type=str, default='lateral_undulation', help='Gaits: lateral undulation, concertina_locomotion')
+    parser.add_argument('-m', '--mode', type=str, default='position', help='Control mode: position, torque, velocity.')
     parser.add_argument('-ng', '--num_goals', type=int, default=3, help='Number of goals (maze env only).')
     parser.add_argument('-c', '--camera', type=int, default=0, help='Attach head camera: 0, 1.')
     parser.add_argument('-ts', '--timesteps', type=int, default=5000, help='Number of timesteps for the simulation.')

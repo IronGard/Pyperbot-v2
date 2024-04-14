@@ -23,6 +23,7 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.monitor import Monitor, ResultsWriter
 from stable_baselines3.common.vec_env import VecEnv, DummyVecEnv, VecNormalize, VecMonitor, SubprocVecEnv #add option to normalise reward + observation
 from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback, EvalCallback
+# from stable_baselines3.common.preprocessing import NormalizeReward, NormalizeObservation
 from stable_baselines3.common import results_plotter
 
 #other relative imports
@@ -47,9 +48,9 @@ params_dir = "pyperbot_v2/models/params/"
 os.makedirs(params_dir, exist_ok = True)
 #===========================================================
 
-def make_env(env_id, rank, seed=0):
+def make_env(env_id, rank, num_envs, seed=0, **kwargs):
     def _init():
-        env = gym.make(env_id)
+        env = gym.make(env_id, num_envs = num_envs, **kwargs)
         env.seed(seed + rank)
         return env
     return _init
@@ -66,30 +67,38 @@ def train(args):
     Added customisation for PPO model. 
     '''
     #create environment
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     if args.vectorise:
-        env = DummyVecEnv([make_env(args.environment, i) for i in range(4)])
-        seed_value = env.env_method("seed")[0][0]
-        # print(f"Simulation seed: {seed_value}")
+        env_kwargs = {'terrain': args.terrain} 
+        num_envs = 4  # Number of vectorized environments
+        env = SubprocVecEnv([make_env(args.environment, i, num_envs, **env_kwargs) for i in range(num_envs)])
         env = VecMonitor(env, log_dir)
-        env = VecNormalize(env, norm_obs = True, norm_reward = True, clip_obs = 10.)
-        env.seed(0)
-        obs = env.reset()
+        if args.normalise:
+            env = VecNormalize(env, norm_obs=True, norm_reward=True, clip_obs=10.)
 
         # eval_callback = EvalCallback(env, best_model_save_path=os.path.join(results_dir, f'{args.rl_algo}', 'best_models'), 
         #                             log_path = os.path.join(results_dir, f'{args.rl_algo}', 'np_plots'), 
         #                             eval_freq = int(args.timesteps)/10, deterministic = True,
         #                             render = False)
     else:
-        env = gym.make(args.environment)
-        env = TimeLimitEnv(env, max_episode_steps = int(args.timesteps))
-        env = Monitor(env, log_dir)
-        seed_value = env.seed(0)
-        obs = env.reset()
-
+        env = DummyVecEnv([lambda: gym.make(args.environment)])
+        env = TimeLimitEnv(env, max_episode_steps = 20000)
+        env = VecMonitor(env, log_dir)
+        if args.normalise:
+            env = VecNormalize(env, norm_obs = True, norm_reward = True, clip_obs = 10.)
+        # env = gym.make(args.environment)
+        # env = TimeLimitEnv(env, max_episode_steps = 25000)
+        # env = Monitor(env, log_dir)
+        # if args.normalise:
+        #     env = NormalizeReward(env, gamma=0.99)
+        #     env = NormalizeObservation(env)
+    
+    seed_value = env.seed(0)
+    obs = env.reset()
     print(f"Simulation seed: {seed_value}")
     eval_callback = EvalCallback(env, best_model_save_path=os.path.join(results_dir, f'{args.rl_algo}', 'best_models'), 
                                 log_path = os.path.join(results_dir, f'{args.rl_algo}', 'np_plots'), 
-                                eval_freq = int(args.timesteps)/10, deterministic = True,
+                                eval_freq = int(args.timesteps)/10, deterministic = False,
                                 render = False)
     
     # custom_callback = SaveOnStepCallback(log_dir = os.path.join(results_dir, f'{args.rl_algo}'))
@@ -101,7 +110,7 @@ def train(args):
         if args.custom:
             agent = CustomPPO(env, learning_rate = args.learning_rate, batch_size = args.batch_size, gamma = args.gamma, clip_epslion = args.clip_epsilon, value_loss_coef = args.value_loss_coef, entropy_coef = args.entropy_coef)
         else:
-            agent = PPO("MlpPolicy", env, verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'))
+            agent = PPO("MlpPolicy", env, verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'), device = device)
     elif args.rl_algo == "TD3":
         agent = TD3("MlpPolicy", env, verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'))
     elif args.rl_algo == "DDPG":
@@ -127,7 +136,7 @@ def test(args):
     by user. 
     '''
     env = gym.make(args.environment)
-    env = gym.wrappers.TimeLimit(env, max_episode_steps = int(args.timesteps))
+    env = gym.wrappers.TimeLimit(env, max_episode_steps = 20000)
     env = Monitor(env, log_dir)
     if args.normalise:
         env = VecNormalize(env, norm_obs = True, norm_reward = True, clip_obs = 10.)
@@ -188,6 +197,8 @@ def get_actions_from_model(model, env, timesteps):
 def main(args):
     if args.file_clear:
         file_clear(config_dir)
+        file_clear(os.path.join(log_dir, 'actions'))
+        os.makedirs(os.path.join(log_dir, 'actions'), exist_ok = True)
         os.makedirs(os.path.join(config_dir, 'goal_config'), exist_ok = True)
         os.makedirs(os.path.join(config_dir, 'snake_config'), exist_ok = True)
     if args.mode == "train":
@@ -211,12 +222,12 @@ if __name__ == "__main__":
     parser.add_argument('-nm', '--normalise', help = "Normalise rewards and observations", default = False)
     parser.add_argument('-rm', '--robot_model', help = "Name of the robot model to be used for simulation", default = "snakebot")
     parser.add_argument('-rl', '--rl_algo', help = "Name of reinforvement learning algorithm to be run", default = "PPO")
-    parser.add_argument('-tt', '--timesteps', help = "Number of timesteps for the training process", default = 100000)
+    parser.add_argument('-tt', '--timesteps', help = "Number of timesteps for the training process", default = 500000)
     parser.add_argument('-nr', '--num_runs', help = "Number of runs for the timestep", default = 5)
     parser.add_argument('-la', '--load_agent', help = "Load a pre-trained agent", default = False)
     parser.add_argument('-t', '--terrain', help = "Terrain to be used for the simulation", default = 'maze')
     parser.add_argument('-ep', '--episodes', help = "Number of training episodes", default = 10)
-    parser.add_argument('-n', '--num_goals', help = "Number of goals to be used in the simulation", default = 3)
+    parser.add_argument('-n', '--num_goals', help = "Number of goals to be used in the simulation", default = 1)
     parser.add_argument('-v', '--vectorise', help = "Vectorise the environment", default = False)
     
     #parser arguments for custom model
