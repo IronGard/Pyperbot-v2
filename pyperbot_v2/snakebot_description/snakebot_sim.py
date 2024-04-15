@@ -99,10 +99,11 @@ def main(args, server):
             
             # Initialise gait movement
             if args.gait == "rectilinear_locomotion":
+                pyb_gaits.rectilinear_locomotion()
+            elif args.gait == "rectilinear_locomotion_irl":
                 pyb_gaits.rectilinear_locomotion_irl()
             else:
                 pyb_gaits.lateral_undulation()
-                #pyb_gaits.rectilinear_locomotion()
             
             # Attach head camera 
             if args.camera == 1:
