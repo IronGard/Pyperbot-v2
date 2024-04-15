@@ -159,7 +159,7 @@ def main(args, server):
 
         # Convert past joint positions to dataframe and export to csv
         all_joint_pos_df = pd.DataFrame(all_joint_pos)
-        os.makedirs('pyperbot_v2/results/manual/csv/joint_positions.csv', exist_ok=True)
+        os.makedirs('pyperbot_v2/results/manual/csv', exist_ok=True)
         all_joint_pos_df.to_csv('pyperbot_v2/results/manual/csv/joint_positions.csv', index = False)
 
         #save all rewards, cumulative rewards, and base positions

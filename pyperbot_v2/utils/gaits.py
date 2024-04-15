@@ -57,8 +57,8 @@ class Gaits():
         if (self._wave_front < segment_length * 4.0):
             scale_start = self._wave_front / (segment_length * 4.0)
 
-        joint_list=[7, 16, 25, 34, 4, 13, 22, 31]
-        steer_list=[3, 4, 12, 13, 21, 22, 30, 31]
+        joint_list=[7, 16, 25, 34, 3, 12, 21, 30]
+        steer_list=[4, 13, 22, 31, 3, 12, 21, 30]
         steering = self._get_keyboard_input()
 
         for joint in range(p.getNumJoints(self._robot_id)):
@@ -90,7 +90,7 @@ class Gaits():
             scale_start = self._wave_front / (segment_length * 4.0)
 
         joint_list = [8, 17, 26, 35]
-        steer_list = [4, 13, 22, 31, 7, 16, 25, 34]
+        steer_list = [3, 12, 21, 30, 7, 16, 25, 34, 4, 13, 22, 31]
         steering = self._get_keyboard_input()
 
         for joint in range(p.getNumJoints(self._robot_id)):
@@ -125,7 +125,7 @@ class Gaits():
             scale_start = self._wave_front / (segment_length * 4.0)
 
         joint_list = [8, 17, 26, 35, 2, 11, 20, 29]
-        steer_list = [4, 13, 22, 31, 7, 16, 25, 34]
+        steer_list = [3, 12, 21, 30, 7, 16, 25, 34, 4, 13, 22, 31]
         steering = self._get_keyboard_input()
 
         for joint in range(p.getNumJoints(self._robot_id)):
