@@ -36,7 +36,7 @@ def objective(trial):
     # Create the environment
     env = gym.make(str(args.environment))
     env = gym.wrappers.TimeLimit(env, max_episode_steps=args.timesteps)
-    trial_monitor_dir = os.path.join('pyperbot_v2/logs/', f'trial_{trial.number + 8}')
+    trial_monitor_dir = os.path.join('pyperbot_v2/logs/', f'trial_{trial.number + 1}')
     os.makedirs(trial_monitor_dir, exist_ok=True)
     env = Monitor(env, trial_monitor_dir, allow_early_resets=True)
     # Create model
@@ -60,9 +60,9 @@ if __name__ == "__main__":
     
 
     if args.clear_files:
-        file_clear('pyperbot_v2/logs/actions')
-        file_clear('pyperbot_v2/logs/rewards')
-        os.remove('studyPPO_optimisation12.db')
+        # file_clear('pyperbot_v2/logs/actions')
+        # file_clear('pyperbot_v2/logs/rewards')
+        # os.remove('studyPPO_optimisation12.db')
         os.makedirs('pyperbot_v2/logs/actions', exist_ok=True)
         os.makedirs('pyperbot_v2/logs/rewards', exist_ok=True)
 
@@ -74,21 +74,21 @@ if __name__ == "__main__":
     storage_url = f"sqlite:///study{study_name}.db"
 
     study = optuna.create_study(study_name = study_name, direction="maximize", storage=storage_url, load_if_exists=True)
-    with tqdm(total=3, desc="Trials") as pbar:
-        for _ in range(3):
+    with tqdm(total=10, desc="Trials") as pbar:
+        for _ in range(10):
             #create trial results folder
-            print(f"\n Trial {_+1}/3")
+            print(f"\n Trial {_+1}/10")
             study.optimize(objective, n_trials=1)
             pbar.update(1)
             #save results of each trial to csv
             df = study.trials_dataframe(attrs = ('number', 'value', 'params'))
-            df.to_csv(f'pyperbot_v2/logs/trial_{_+8}/trial{_+8}.csv', index = False)
+            df.to_csv(f'pyperbot_v2/logs/trial_{_+1}/trial{_+1}.csv', index = False)
             #move data from stored config to logs
             # for filename in os.listdir(f'pyperbot_v2/logs/stored_configs'):
             #     os.rename(f'pyperbot_v2/logs/stored_configs/{filename}', f'pyperbot_v2/logs/trial_{_+1}/{filename}')
             #move data from rewards to trials
             for filename in os.listdir(f'pyperbot_v2/logs/rewards'):
-                os.rename(f'pyperbot_v2/logs/rewards/{filename}', f'pyperbot_v2/logs/trial_{_+8}/{filename}')
+                os.rename(f'pyperbot_v2/logs/rewards/{filename}', f'pyperbot_v2/logs/trial_{_+1}/{filename}')
 
     print("Best trial:")
     trial = study.best_trial

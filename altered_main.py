@@ -108,7 +108,8 @@ def train(args):
     #normalise the observations and rewards and clip observations
     if args.rl_algo == "PPO":
         if args.custom:
-            agent = CustomPPO(env, learning_rate = args.learning_rate, batch_size = args.batch_size, gamma = args.gamma, clip_epslion = args.clip_epsilon, value_loss_coef = args.value_loss_coef, entropy_coef = args.entropy_coef)
+            agent = PPO("MlpPolicy", env, verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'), device = device, learning_rate = args.learning_rate, batch_size = args.batch_size, gamma = args.gamma, clip_range = args.clip_epsilon, vf_coef = args.value_loss_coef, ent_coef = args.entropy_coef)
+            print(f"Using params: learning rate: {args.learning_rate}, batch size: {args.batch_size}, gamma: {args.gamma}, clip epsilon: {args.clip_epsilon}, value loss coef: {args.value_loss_coef}, entropy coef: {args.entropy_coef}")
         else:
             agent = PPO("MlpPolicy", env, verbose = 1, tensorboard_log = os.path.join(results_dir, f'{args.rl_algo}'), device = device)
     elif args.rl_algo == "TD3":
@@ -236,7 +237,7 @@ if __name__ == "__main__":
     parser.add_argument('-nm', '--normalise', help = "Normalise rewards and observations", default = False)
     parser.add_argument('-rm', '--robot_model', help = "Name of the robot model to be used for simulation", default = "snakebot")
     parser.add_argument('-rl', '--rl_algo', help = "Name of reinforvement learning algorithm to be run", default = "PPO")
-    parser.add_argument('-tt', '--timesteps', help = "Number of timesteps for the training process", default = 500000)
+    parser.add_argument('-tt', '--timesteps', help = "Number of timesteps for the training process", default = 2000000)
     parser.add_argument('-nr', '--num_runs', help = "Number of runs for the timestep", default = 5)
     parser.add_argument('-la', '--load_agent', help = "Load a pre-trained agent", default = False)
     parser.add_argument('-t', '--terrain', help = "Terrain to be used for the simulation", default = 'maze')
@@ -246,12 +247,12 @@ if __name__ == "__main__":
     
     #parser arguments for custom model
     parser.add_argument('-c', '--custom', help = "Decide whether to use a custom model or not", default = False)
-    parser.add_argument('-lr', '--learning_rate', help = "Learning rate for models", default = 0.0003)
-    parser.add_argument('-bs', '--batch_size', help = "Batch size for models", default = 64)
-    parser.add_argument('-g', '--gamma', help = "Gamma value for models", default = 0.99)
-    parser.add_argument('-ce', '--clip_epsilon', help = "Clip epsilon value for models", default = 0.2)
-    parser.add_argument('-vlc', '--value_loss_coef', help = "Value loss coefficient for models", default = 0.5)
-    parser.add_argument('-ec', '--entropy_coef', help = "Entropy coefficient for models", default = 0.01)
+    parser.add_argument('-lr', '--learning_rate', type = float, help = "Learning rate for models", default = 0.0003)
+    parser.add_argument('-bs', '--batch_size', type = int, help = "Batch size for models", default = 64)
+    parser.add_argument('-g', '--gamma', type = float, help = "Gamma value for models", default = 0.99)
+    parser.add_argument('-ce', '--clip_epsilon', type = float, help = "Clip epsilon value for models", default = 0.2)
+    parser.add_argument('-vlc', '--value_loss_coef', type = float, help = "Value loss coefficient for models", default = 0.5)
+    parser.add_argument('-ec', '--entropy_coef', type = float, help = "Entropy coefficient for models", default = 0.01)
 
     args = parser.parse_args()
     # conn = setup_connection(s) #TODO - setup timeout condition for connection timeout
