@@ -45,7 +45,7 @@ class StandardTestEnv(gym.Env):
         #TODO: add VecNormalize to normalise observations before feeding to PPO agent.
         self.observation_space = gym.spaces.Box(
             low = np.array([-20, -20, -20, -3.1415, -3.1415, -3.1415, -100]), #first three are base position, next three are base orientation, next is velocity, last is distance to goal
-            high = np.array([-20, -20, 20, 3.1415, 3.1415, 3.1415, 100]),
+            high = np.array([20, 20, 20, 3.1415, 3.1415, 3.1415, 100]),
             dtype = np.float32
         )
         # self.observation_space = gym.spaces.Box(
@@ -98,6 +98,7 @@ class StandardTestEnv(gym.Env):
         # observation = self._snake.get_full_observation()
         #increment current step
         self.current_step += 1
+        self.remark = "no remarks yet"
         print("%======================================%")
         print("Step: ", self.current_step)
         # print("Base Position: ", observation[:3])
@@ -120,14 +121,11 @@ class StandardTestEnv(gym.Env):
         # with open(f'pyperbot_v2/logs/actions/trial_{self.trial_number-2}.csv', 'a') as f:
         #     f.write(', '.join(str(x) for x in action.tolist()))
         #     f.write('\n')
-        with open(f'pyperbot_v2/logs/actions/trial_{self.trial_number-2}.csv', 'a') as f:
-            f.write(', '.join(str(x) for x in snake_joint_observation[0]))
-            f.write('\n')
         self._done = False
         self._truncated = False
         #First termination condition - if distance to goal is less than finish condition, set reward to 10000 and end episode
         if dist_to_goal < self._finish_con:
-            self.reward += 50000 + (1/self.current_step)*1000000
+            self.reward += 50000 + (1000000/self.current_step)
             self.termination_condition = "goal reached"
             if self.current_step < 10000:
                 self.reward += 10000
@@ -135,11 +133,11 @@ class StandardTestEnv(gym.Env):
             self._done = True
         #check x position and increment reward with milestones - scale reward positively each time it exceeds this distance
         if self._snake.get_base_observation()[0][0] > self.milestone_track:
-            self.reward += 200*(self.milestone_track*10)
+            self.reward += 100*(self.milestone_track*10)
             self.milestone_track += 0.1
         #milestone rewards - every 500 steps, if snake reaches 1m closer to goal, increase reward by 2000
-        elif (self.current_step % 100 == 0 and distance_traveled_to_goal > 0):
-            self.reward += 100
+        # elif (self.current_step % 100 == 0 and distance_traveled_to_goal > 0):
+        #     self.reward += 100
         #penalise small movements
         if abs(distance_traveled_in_step) < 1e-07:
             self.reward -= 20
@@ -168,11 +166,12 @@ class StandardTestEnv(gym.Env):
         elif (self.current_step > 0.4*self.max_episode_steps) and (self.current_step < self.max_episode_steps):
             if distance_traveled_to_goal < 1:
                 self._done = True
+                self.reward -= 5000
                 self.termination_condition = "poor performance"
         #penalise heavy movement in y direction
         if (abs(self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][1]) >  (abs(self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][0]) + 0.5)
-                or abs(self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][1]) > 1):
-            self.reward -= (50 + abs(self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][1]*10))
+                or abs(self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][1]) > 1.5):
+            self.reward -= (30 + abs(self._client.getBasePositionAndOrientation(self._snake.get_ids()[0])[0][1]*10))
             self.remark = 'heavy movement in y direction'
             self.remark_counter += 1
         #pernalise wasteful movement - if total distance travelled is more than 3 times the distance travelled on the way to the goal.
@@ -189,8 +188,8 @@ class StandardTestEnv(gym.Env):
             self.remark_counter += 1
 
         #if moving backwards, penalise
-        if ((distance_traveled_to_goal < 0) and ((self.prev_dist_to_goal - dist_to_goal) <0)):
-            self.reward -= 50
+        if ((distance_traveled_to_goal < 0) and ((self.prev_dist_to_goal - dist_to_goal) <0) and (self.current_step > 1000)):
+            self.reward -= 20
             self.remark = "moving backwards"
             self.remark_counter += 1
         #stop if there are too many negative remarks (i.e. reward counter > threshold and reward <0)
@@ -199,12 +198,22 @@ class StandardTestEnv(gym.Env):
         self.cum_reward += self.reward
         if (self.cum_reward < 0) and (self.current_step > 0.5*self.max_episode_steps or self.remark_counter > 3000):
             self.termination_condition = "too many negative remarks"
+            self.reward -= 10000
             self._done = True
         #stop if reward is too low
         if self.cum_reward < -20000:
             self.termination_condition = "negative reward threshold reached"
+            self.reward -= 10000
             self._done = True
-            
+        
+        #storing actions, rewards and remarks every ten trials
+        if (self.trial_number-2) % 10 == 0 and self.trial_number > 2:
+            with open(f'pyperbot_v2/logs/actions/episode_{self.trial_number-2}.csv', 'a') as f:
+                f.write(', '.join(str(x) for x in snake_joint_observation[0]))
+                f.write('\n')
+            #store rewards, remarks, and distances in csv file
+            with open(f'pyperbot_v2/logs/rewards/episode_{self.trial_number-2}.csv', 'a') as f:
+                f.write(f"{self.current_step}, {self.remark}, {self.reward}, {self.cum_reward}, {distance_traveled_to_goal}, {distance_traveled_in_step}\n")
         
         if self.num_envs > 1:  # Check if vectorized environments are being used
             for i in range(self.num_envs):
