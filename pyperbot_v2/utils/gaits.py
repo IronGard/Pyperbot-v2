@@ -58,7 +58,7 @@ class Gaits():
             scale_start = self._wave_front / (segment_length * 4.0)
 
         joint_list=[7, 16, 25, 34, 3, 12, 21, 30]
-        steer_list=[3, 12, 21, 30]
+        steer_list=[4, 13, 22, 31, 3, 12, 21, 30]
         steering = self._get_keyboard_input()
 
         for joint in range(p.getNumJoints(self._robot_id)):
@@ -69,9 +69,9 @@ class Gaits():
 
             # map phase to curvature
             if joint in joint_list:
-                target_pos = math.sin(phase)* scale_start* wave_amplitude + steering
+                target_pos = math.sin(phase)* scale_start* wave_amplitude + steering*0.5
             elif joint in steer_list:
-                target_pos = steering
+                target_pos = steering*0.5
             else:
                 target_pos = 0
 
@@ -90,7 +90,7 @@ class Gaits():
             scale_start = self._wave_front / (segment_length * 4.0)
 
         joint_list = [8, 17, 26, 35]
-        steer_list = [3, 12, 21, 30]
+        steer_list = [3, 12, 21, 30, 7, 16, 25, 34, 4, 13, 22, 31]
         steering = self._get_keyboard_input()
 
         for joint in range(p.getNumJoints(self._robot_id)):
@@ -104,9 +104,7 @@ class Gaits():
             if joint in joint_list:
                 target_pos = math.sin(phase)* scale_start* wave_amplitude
             elif joint in steer_list:
-                # Steering currently disabled for concertina locomotion.
-                target_pos = steering
-                #target_pos = 0
+                target_pos = steering*0.5
             else:
                 target_pos = 0
 
@@ -127,7 +125,7 @@ class Gaits():
             scale_start = self._wave_front / (segment_length * 4.0)
 
         joint_list = [8, 17, 26, 35, 2, 11, 20, 29]
-        steer_list = [3, 12, 21, 30]
+        steer_list = [3, 12, 21, 30, 7, 16, 25, 34, 4, 13, 22, 31]
         steering = self._get_keyboard_input()
 
         for joint in range(p.getNumJoints(self._robot_id)):
@@ -141,8 +139,7 @@ class Gaits():
             if joint in joint_list:
                 target_pos = math.sin(phase)* scale_start* wave_amplitude
             elif joint in steer_list:
-                # Steering currently disabled for concertina locomotion.
-                target_pos = steering*4
+                target_pos = steering*0.5
                 #target_pos = 0
             else:
                 target_pos = 0

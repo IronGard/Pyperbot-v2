@@ -99,10 +99,11 @@ def main(args, server):
             
             # Initialise gait movement
             if args.gait == "rectilinear_locomotion":
+                pyb_gaits.rectilinear_locomotion()
+            elif args.gait == "rectilinear_locomotion_irl":
                 pyb_gaits.rectilinear_locomotion_irl()
             else:
                 pyb_gaits.lateral_undulation()
-                #pyb_gaits.rectilinear_locomotion()
             
             # Attach head camera 
             if args.camera == 1:
@@ -158,6 +159,7 @@ def main(args, server):
 
         # Convert past joint positions to dataframe and export to csv
         all_joint_pos_df = pd.DataFrame(all_joint_pos)
+        os.makedirs('pyperbot_v2/results/manual/csv', exist_ok=True)
         all_joint_pos_df.to_csv('pyperbot_v2/results/manual/csv/joint_positions.csv', index = False)
 
         #save all rewards, cumulative rewards, and base positions
