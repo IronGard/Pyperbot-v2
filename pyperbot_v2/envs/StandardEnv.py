@@ -414,9 +414,9 @@ class StandardTestEnv(gym.Env):
         self._client.resetSimulation() #reset the simulation
         self._client.setGravity(0, 0, -9.81)
         self.plane = Plane(self._client) #insert plane
-        # self.snake_init_pos = [np.random.uniform(0,5), 0, 0.5]
-        self._snake = StandardSnakebot(self._client, snakebot_dir = "pyperbot_v2/snakebot_description/urdf/snakebot.urdf.xacro", basePosition = [0, 0, 0.5], seed = int(self.seed_value))
-        self._goal = SoloGoal(self._client, [-5, 0, 0], log_number = self.trial_number)  
+        self.snake_init_pos = [np.random.uniform(0, 5), 0, 0.5]
+        self._snake = StandardSnakebot(self._client, snakebot_dir = "pyperbot_v2/snakebot_description/urdf/snakebot.urdf.xacro", basePosition = self.snake_init_pos, seed = int(self.seed_value))
+        self._goal = SoloGoal(self._client, [-np.random.uniform(5,10), 0, 0], log_number = self.trial_number)  
         print("Goal Position: ", self._goal.get_goal_pos())  
         if env == "maze":
             self._env = Maze(self._client)

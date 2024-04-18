@@ -32,6 +32,13 @@ transmitting_data = []
 host = '0.0.0.0'
 port = 6969
 
+def unnormalise_actions(actions, joint_limits):
+    # Unnormalise actions
+    unnormalised_actions = []
+    for i in range(len(actions)):
+        unnormalised_actions.append(actions[i] * (joint_limits[i][1] - joint_limits[i][0]) / 2 + (joint_limits[i][1] + joint_limits[i][0]) / 2)
+    return unnormalised_actions
+
 def main(args, server):
     pyb_setup = Loader("--mp4=results/videos/training_video.mp4")
 
@@ -172,7 +179,7 @@ def main(args, server):
         # Load joint positions from csv
         try:
             file_path = input("Enter the trial number to load: ")
-            all_joint_pos_df = pd.read_csv(f'pyperbot_v2/logs/actions/trial_{file_path}.csv')
+            all_joint_pos_df = pd.read_csv(f'pyperbot_v2/logs/actions/episode_{file_path}.csv')
             # all_joint_pos_df = pd.read_csv(os.path.join(results_dir, 'PPO', f'actions_PPO_snakebot_seed{int(args.seed)}.csv'))
             # old_joint_pos_df = pd.read_csv(os.path.join(results_dir, 'PPO', 'csv', f'seed{args.seed}_joint_positions.csv'))
             moving_joint_ids = [2, 3, 8, 11, 12, 17, 20, 21, 26, 29, 30, 35]
@@ -181,6 +188,7 @@ def main(args, server):
             if args.mode == 'position':
                 for i in range(len(all_joint_pos_df)):
                     joint_pos = all_joint_pos_df.iloc[i].values
+                    joint_pos = unnormalise_actions(joint_pos, info.get_joint_limits())
                     #apply joint positions to the robot\
                     print("Joint positions: ", joint_pos)
                     print("Base Position: ", info.base_info()[0])

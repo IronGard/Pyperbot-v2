@@ -81,14 +81,14 @@ def train(args):
         #                             eval_freq = int(args.timesteps)/10, deterministic = True,
         #                             render = False)
     else:
-        env = DummyVecEnv([lambda: gym.make(args.environment)])
+        # env = DummyVecEnv([lambda: gym.make(args.environment)])
+        # env = TimeLimitEnv(env, max_episode_steps = 20000)
+        # env = VecMonitor(env, log_dir)
+        # if args.normalise:
+        #     env = VecNormalize(env, norm_obs = True, norm_reward = True, clip_obs = 10.)
+        env = gym.make(args.environment)
         env = TimeLimitEnv(env, max_episode_steps = 20000)
-        env = VecMonitor(env, log_dir)
-        if args.normalise:
-            env = VecNormalize(env, norm_obs = True, norm_reward = True, clip_obs = 10.)
-        # env = gym.make(args.environment)
-        # env = TimeLimitEnv(env, max_episode_steps = 25000)
-        # env = Monitor(env, log_dir)
+        env = Monitor(env, log_dir)
         # if args.normalise:
         #     env = NormalizeReward(env, gamma=0.99)
         #     env = NormalizeObservation(env)
@@ -137,7 +137,7 @@ def test(args):
     by user. 
     '''
     env = gym.make(args.environment)
-    env = gym.wrappers.TimeLimit(env, max_episode_steps = 20000)
+    env = TimeLimitEnv(env, max_episode_steps = 20000)
     env = Monitor(env, log_dir)
     if args.normalise:
         env = VecNormalize(env, norm_obs = True, norm_reward = True, clip_obs = 10.)
@@ -197,7 +197,7 @@ def test(args):
         plt.close()
 
     #establishing mean and std reward
-    mean_reward, std_reward = evaluate_policy(agent, env, n_eval_episodes = 10)
+    mean_reward, std_reward = evaluate_policy(agent, env, n_eval_episodes = 100)
     print(f"Mean reward: {mean_reward}, Std reward: {std_reward}")
     env.close()
 
@@ -244,6 +244,7 @@ if __name__ == "__main__":
     parser.add_argument('-ep', '--episodes', help = "Number of training episodes", default = 10)
     parser.add_argument('-n', '--num_goals', help = "Number of goals to be used in the simulation", default = 1)
     parser.add_argument('-v', '--vectorise', help = "Vectorise the environment", default = False)
+    parser.add_argument('-r', '--randomise', help = "Randomise the environment", default = False)
     
     #parser arguments for custom model
     parser.add_argument('-c', '--custom', help = "Decide whether to use a custom model or not", default = False)
