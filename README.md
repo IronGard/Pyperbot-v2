@@ -1,7 +1,9 @@
 Rough-Terrain Navigation of Snake Robot with Model-Based Reinforcement Learning
 =========================
 
+
 This repo contains the majority of the code used within the 4th year group project.
+
 
 Project Members: Hahn Lon Lam HarrySoftley-Graham, Gene Dumnernchanvanich, Wing Hei Cheung
 Supervisor: Dr Chow Yin Lai
