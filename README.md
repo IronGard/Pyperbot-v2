@@ -1,82 +1,53 @@
-Rough-Terrain Navigation of Snake Robot with Model-Based Reinforcement Learning
-=========================
+# Rough Terrain Navigation of a Snake Robot using Model-Based Reinforcement Learning
 
-
-This repo contains the majority of the code used within the 4th year group project.
-
-
+Most snake robots developed for search-and-rescue-tasks have relied on preprogrammed instructions in order for the robot to navigate. This project proposes to use Model-Based reinforcement learning (MBRL) to enable the robot to achieve forward locomotion and be able to navigate complex environments autonomously.
 Project Members: Hahn Lon Lam, Harry Softley-Graham, Gene Dumnernchanvanich, Wing Hei Cheung
 
 
 Supervisor: Dr Chow Yin Lai
 
-To run this code, it is recommended to download Docker, and duplicate the dicker image found [here](https://hub.docker.com/repository/docker/isaaccheung0930/pyperbotv2/general)
+## Prerequisites
+**Gynmnaisum**  
+Install the latest version of swig and ffmpeg and add them to your PATH.  
+**Pybullet**  
+Install the Microsoft Visual C++ Build Tools. This can be found at:  
+https://learn.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022  
+**Docker Visual Server**  
+To run Pybullet simulation in docker container, install Vcxsrv from the following link and select "Disable Access Control" option at launch. This config can be saved for each other run.  
+https://github.com/ArcticaProject/vcxsrv/releases/tag/1.17.0.0-3  
+**CUDA**  
+To enable GPU processing of the RL model, install Nvidia CUDA toolkit from the following link.  
+https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64  
 
-SWIG Python Distributions
-=========================
+## Supported Python Version
+This project supports python versions from 3.11.0-3.11.7.
 
-[![PyPI](https://img.shields.io/pypi/v/swig.svg)](https://pypi.org/project/swig)
-
-A project that packages SWIG as a Python package, enabling `swig` to be installed from PyPI:
-
-```sh
-pip install swig
+## Requirements
+To install the requirements, run:
 ```
-
-or used as part of `build-system.requires` in a pyproject.toml file:
-
-```toml
-[build-system]
-requires = ["swig"]
+pip install -r requirements.txt
 ```
+You may need to remove the +cu121 at the end of the torch, torchaudio and torchvision imports in order to be able to install all necessary requirements. Tensorflow does not support python version >3.11 at the moment. 
 
-PyPI package versions will follow the `major.minor.patch` version numbers of SWIG releases.
-
-Binary wheels for Windows, macOS, and Linux for most CPU architectures supported on PyPI are provided. ARM wheels for Raspberry Pi available at https://www.piwheels.org/project/swig/.
-
-[SWIG PyPI Package Homepage](https://github.com/nightlark/swig-pypi)
-
-[SWIG Homepage](http://www.swig.org/)
-
-[SWIG Source Code](https://github.com/swig/swig/)
-
-[SWIG License](https://github.com/swig/swig/blob/master/LICENSE): GPL-3.0-or-later with portions under [LICENSE-UNIVERSITIES](https://github.com/nightlark/swig-pypi/blob/main/LICENSE-UNIVERSITIES) (see [LICENSE-SWIG](https://github.com/nightlark/swig-pypi/blob/main/LICENSE-SWIG) for details)
-
-Installing SWIG
-===============
-
-SWIG can be installed by pip with:
-
-```sh
-pip install swig
+## Running from docker container
+The Docker image can be pull from Dockerhub. Tag v2 and onwards support CUDA.
 ```
-
-or:
-
-```sh
-python -m pip install swig
+docker image pull isaaccheung0930/pyperbotv2:<tag>
 ```
-
-Building from the source dist package requires internet access in order to download a copy of the SWIG source code.
-
-Using with pipx
-===============
-
-Using `pipx run swig <args>` will run SWIG without any install step, as long as the machine has pipx installed (which includes GitHub Actions runners).
-
-Using with pyproject.toml
-=========================
-
-SWIG can be added to the `build-system.requires` key in a pyproject.toml file for building Python extensions that use SWIG to generate bindings.
-
-```toml
-[build-system]
-requires = ["swig"]
+Alternatively, to build the image on host pc:
 ```
-
-License
-=======
-
-The code for this project is covered by the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0). Source distributions do not include a copy of the SWIG source code or binaries. Binary wheels are covered by the SWIG license (GPLv3), due to their inclusion of a compiled SWIG binary and library files.
-
-SWIG is distributed under the [GNU General Public License v3 or later](https://github.com/swig/swig/blob/master/LICENSE) with portions under the file [LICENSE-UNIVERSITIES](https://github.com/swig/swig/blob/master/LICENSE-UNIVERSITIES). For more information about SWIG, visit [http://www.swig.org](http://www.swig.org/)
+docker build --pull --rm -f "Dockerfile" -t pyperbotv2:v2 "."
+```
+To run the container, execute container_setup.bat or 
+run the following commands (assuming currently at root directory):
+```
+docker run -it --rm --gpus all -v .:/pyperbot_v2 pyperbotv2:v2
+export DISPLAY=<your_ip>:0.0
+```
+Within the container, for manual control visualisation, do:
+```
+python3 pyperbot_v2/snakebot_description/snakebot_sim.py.
+```
+For the main snakebot with reinforcement learning, run:
+```
+python3 main.py
