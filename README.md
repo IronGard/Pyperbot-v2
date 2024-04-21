@@ -1,10 +1,10 @@
 # Rough Terrain Navigation of a Snake Robot using Model-Based Reinforcement Learning
 
-Most snake robots developed for search-and-rescue-tasks have relied on preprogrammed instructions in order for the robot to navigate. This project proposes to use Model-Based reinforcement learning (MBRL) to enable the robot to achieve forward locomotion and be able to navigate complex environments autonomously.
 Project Members: Hahn Lon Lam, Harry Softley-Graham, Gene Dumnernchanvanich, Wing Hei Cheung
 
-
 Supervisor: Dr Chow Yin Lai
+
+Most snake robots developed for search-and-rescue-tasks have relied on preprogrammed instructions in order for the robot to navigate. This project proposes to use Model-Based reinforcement learning (MBRL) to enable the robot to achieve forward locomotion and be able to navigate complex environments autonomously.
 
 ## Prerequisites
 **Gynmnaisum**  
