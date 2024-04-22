@@ -29,7 +29,7 @@ from utils.snakebot_info import Info
 
 class StandardSnakebot:
     def __init__(self, client, basePosition = [0, 0, 0.5], baseOrientation = [0, 0, 0, 1], 
-                 snakebot_dir = "pyperbot_v2/snakebot_description/urdf/snakebot.urdf.xacro",
+                 snakebot_dir = "pyperbot_v2/snakebot_description/urdf/snakebot_swapped.urdf.xacro",
                  gait = "lateral_undulation", manual = False, seed = 0):
         '''
         Constructor for the Snakebot class to define a snakebot object. Altered to allow for additional parameters.
@@ -68,7 +68,7 @@ class StandardSnakebot:
         Function to unnormalise the action space from the range [-1, 1] to the actual joint limits
         '''
         #get joint limits
-        lateral_undulation_joint_list = [7, 16, 25, 34, 3, 12, 21, 30]
+        lateral_undulation_joint_list = [4, 7, 13, 16, 22, 25, 34, 3, 12, 21, 30]
         moving_joint_list = [2, 3, 8, 11, 12, 17, 20, 21, 26, 29, 30, 35]
         all_moving_joint_ids = [2, 3, 4, 7, 8, 11, 12, 13, 16, 17, 20, 21, 22, 25, 26, 29, 30, 31, 34, 35]
         #get joint limits only for joints in moving joint list
@@ -94,8 +94,8 @@ class StandardSnakebot:
         lateral_undulation_joint_list = [7, 16, 25, 34, 3, 12, 21, 30]
         moving_joint_list = [2, 3, 8, 11, 12, 17, 20, 21, 26, 29, 30, 35]
         all_moving_joint_ids = [2, 3, 4, 7, 8, 11, 12, 13, 16, 17, 20, 21, 22, 25, 26, 29, 30, 31, 34, 35]
-        print("actions = ", actions)
-        print("%======================================%\n")
+        # print("actions = ", actions)
+        # print("%======================================%\n")
         counter = 0
         joint_list = []
         for joint in range(self._client.getNumJoints(self._robot)):
