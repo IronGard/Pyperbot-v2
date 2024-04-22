@@ -15,6 +15,6 @@ set "DISPLAY=!ip!:0.0"
 echo Exporting display to %DISPLAY%
 
 REM Run the docker container
-docker run -it --rm --gpus all -v .:/pyperbot_v2 -e DISPLAY=%DISPLAY% pyperbotv2:v2
+docker run -it --rm --gpus all -v .:/pyperbot_v2 -e DISPLAY=%DISPLAY% isaaccheung0930/pyperbotv2:v2
 echo Container setup completed
 endlocal
